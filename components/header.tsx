@@ -22,7 +22,6 @@ const clothingCategories = [
     items: [
       { name: "Blouses", href: "#shop" },
       { name: "Shirts", href: "#shop" },
-      { name: "T-Shirts", href: "#shop" },
       { name: "Sweaters", href: "#shop" },
       { name: "Cardigans", href: "#shop" },
     ],
@@ -44,7 +43,6 @@ const clothingCategories = [
       { name: "Midi Dresses", href: "#shop" },
       { name: "Mini Dresses", href: "#shop" },
       { name: "Maxi Dresses", href: "#shop" },
-      { name: "Cocktail Dresses", href: "#shop" },
     ],
   },
   {
@@ -66,10 +64,6 @@ const clothingCategories = [
     ],
   },
   {
-    name: "Sales",
-    href: "/sales",
-  },
-  {
     name: "Alteration Services",
     href: "/book-consultation",
   },
@@ -82,7 +76,6 @@ const mobileNavigation = [
   { name: "Dresses", href: "#shop" },
   { name: "Outerwear", href: "#shop" },
   { name: "Suits", href: "#shop" },
-  { name: "Sales", href: "#sales" },
   { name: "Alterations Services", href: "/book-consultation" },
   { name: "Our Story", href: "#story" },
   { name: "Contact", href: "#contact" },
@@ -91,8 +84,10 @@ const mobileNavigation = [
 export function Header() {
   const [cartCount] = useState(0)
   const [favoritesCount] = useState(0)
+  const isLoggedIn = false // replace with auth logic
 
   return (
+    
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
 
       {/* Top Header - Logo Centered */}
@@ -189,31 +184,32 @@ export function Header() {
         {/* Right side icons */}
         <div className="flex items-center gap-2 lg:gap-4">
           {/* Favorites */}
-          <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
-            <Heart className="h-5 w-5" />
-            <span className="sr-only">Favorites</span>
-            {favoritesCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-medium text-accent-foreground">
-                {favoritesCount}
-              </span>
-            )}
-          </Button>
+        <Button
+  asChild
+  variant="ghost"
+  size="icon"
+  className="relative text-muted-foreground hover:text-foreground"
+>
+  <Link href="/favorites">
+    <Heart className="h-5 w-5" />
+    <span className="sr-only">Favorites</span>
+  </Link>
+</Button>
 
           {/* Shopping Bag */}
-          <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
+        <Button asChild variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
+          <Link href="/checkout">
             <ShoppingBag className="h-5 w-5" />
-            <span className="sr-only">Shopping bag</span>
-            {cartCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-medium text-accent-foreground">
-                {cartCount}
-              </span>
-            )}
-          </Button>
+              <span className="sr-only">Shopping bag</span>
+          </Link>
+        </Button>
 
           {/* User Account */}
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-            <User className="h-5 w-5" />
-            <span className="sr-only">Account</span>
+          <Button asChild variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+            <Link href="/login?redirect=/profile">
+              <User className="h-5 w-5" />
+                <span className="sr-only">Account</span>
+            </Link>
           </Button>
         </div>
       </nav>

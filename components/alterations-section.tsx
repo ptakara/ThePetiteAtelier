@@ -35,6 +35,7 @@ export function AlterationsSection() {
     <section id="alterations" className="py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+
           {/* Image */}
           <div className="relative">
             <div className="aspect-[4/3] overflow-hidden rounded-lg bg-muted">
@@ -44,13 +45,6 @@ export function AlterationsSection() {
                 fill
                 className="object-cover"
               />
-            </div>
-            {/* Stats overlay */}
-            <div className="absolute -bottom-6 -right-6 bg-background border border-border rounded-lg p-6 shadow-lg hidden md:block">
-              <div className="text-center">
-                <p className="font-serif text-3xl font-medium text-foreground">15+</p>
-                <p className="text-sm text-muted-foreground mt-1">Years of Expertise</p>
-              </div>
             </div>
           </div>
 
@@ -86,11 +80,17 @@ export function AlterationsSection() {
               ))}
             </div>
 
-            <Button asChild size="lg" className="mt-10 bg-foreground text-background hover:bg-foreground/90">
-              <Link href="/book-consultation">
-                Book a Consultation
-              </Link>
-            </Button>
+            <div className="mt-10 w-full">
+              <Button
+                asChild
+                size="lg"
+                className="w-full bg-foreground text-background hover:bg-foreground/90"
+              >
+                <Link href="/book-consultation">
+                  Book a Consultation
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </div>

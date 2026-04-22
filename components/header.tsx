@@ -18,49 +18,40 @@ import {
 const clothingCategories = [
   {
     name: "Tops",
-    href: "#shop",
+    href: "/shop/tops",
     items: [
-      { name: "Blouses", href: "#shop" },
-      { name: "Shirts", href: "#shop" },
-      { name: "Sweaters", href: "#shop" },
-      { name: "Cardigans", href: "#shop" },
+      { name: "Blouses", href: "/shop/tops?subcategory=blouses" },
+      { name: "Shirts", href: "/shop/tops?subcategory=shirts" },
+      { name: "Sweaters", href: "/shop/tops?subcategory=sweaters" },
+      { name: "Cardigans", href: "/shop/tops?subcategory=cardigans" },
     ],
   },
   {
     name: "Bottoms",
-    href: "#shop",
+    href: "/shop/bottoms",
     items: [
-      { name: "Trousers", href: "#shop" },
-      { name: "Jeans", href: "#shop" },
-      { name: "Skirts", href: "#shop" },
-      { name: "Shorts", href: "#shop" },
+      { name: "Trousers", href: "/shop/bottoms?subcategory=trousers" },
+      { name: "Jeans", href: "/shop/bottoms?subcategory=jeans" },
+      { name: "Skirts", href: "/shop/bottoms?subcategory=skirts" },
+      { name: "Shorts", href: "/shop/bottoms?subcategory=shorts" },
     ],
   },
   {
     name: "Dresses",
-    href: "#shop",
+    href: "/shop/dresses",
     items: [
-      { name: "Midi Dresses", href: "#shop" },
-      { name: "Mini Dresses", href: "#shop" },
-      { name: "Maxi Dresses", href: "#shop" },
+      { name: "Midi Dresses", href: "/shop/dresses?subcategory=midi" },
+      { name: "Mini Dresses", href: "/shop/dresses?subcategory=mini" },
+      { name: "Maxi Dresses", href: "/shop/dresses?subcategory=maxi" },
     ],
   },
   {
     name: "Outerwear",
-    href: "#shop",
+    href: "/shop/outerwear",
     items: [
-      { name: "Blazers", href: "#shop" },
-      { name: "Coats", href: "#shop" },
-      { name: "Jackets", href: "#shop" },
-      { name: "Vests", href: "#shop" },
-    ],
-  },
-  {
-    name: "Suits",
-    href: "#shop",
-    items: [
-      { name: "Suit Sets", href: "#shop" },
-      { name: "Suit Separates", href: "#shop" },
+      { name: "Blazers", href: "/shop/outerwear?subcategory=blazers" },
+      { name: "Coats", href: "/shop/outerwear?subcategory=coats" },
+      { name: "Jackets", href: "/shop/outerwear?subcategory=jackets" },
     ],
   },
   {
@@ -75,7 +66,6 @@ const mobileNavigation = [
   { name: "Bottoms", href: "#shop" },
   { name: "Dresses", href: "#shop" },
   { name: "Outerwear", href: "#shop" },
-  { name: "Suits", href: "#shop" },
   { name: "Alterations Services", href: "/book-consultation" },
   { name: "Our Story", href: "#story" },
   { name: "Contact", href: "#contact" },
@@ -127,7 +117,7 @@ export function Header() {
           </Sheet>
         </div>
 
-        <NavigationMenu>
+        <NavigationMenu viewport={false}>
           <NavigationMenuList className="gap-1">
 
             {/* Home (always first) */}

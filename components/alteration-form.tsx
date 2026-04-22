@@ -8,10 +8,26 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { MapPin, Phone, Mail, Clock } from "lucide-react"
 
 
+type Expert = {
+  name: string
+  address: string
+}
 
-const expertsByZip: Record<string, string[]> = {
-  "33602": ["Alterations World", "Alterations by Seamstress Lena", "Tailor Made Alterations", "Affordable Sewing Services", "Kathleen's Kreations"],
-  "33544": [" Ella's Alterations LLC", "Kim's Tailor Shop", "Sew Good", "Alexander's Alterations & Tailoring"],
+const expertsByZip: Record<string, Expert[]> = {
+  "33602": [
+    { name: "Alterations World", address: "120 Main St, Tampa, FL 33602" },
+    { name: "Alterations by Seamstress Lena", address: "45 River Ave, Tampa, FL 33602" },
+    { name: "Tailor Made Alterations", address: "88 Downtown Blvd, Tampa, FL 33602" },
+    { name: "Affordable Sewing Services", address: "210 Harbor Rd, Tampa, FL 33602" },
+    { name: "Kathleen's Kreations", address: "33 Palm St, Tampa, FL 33602" },
+  ],
+
+  "33544": [
+    { name: "Ella's Alterations LLC", address: "10 Westview Dr, Wesley Chapel, FL 33544" },
+    { name: "Kim's Tailor Shop", address: "55 Oak Ln, Wesley Chapel, FL 33544" },
+    { name: "Sew Good", address: "120 Market St, Wesley Chapel, FL 33544" },
+    { name: "Alexander's Alterations & Tailoring", address: "9 Heritage Pkwy, Wesley Chapel, FL 33544" },
+  ],
 }
 
 export function AlterationForm() {
@@ -23,9 +39,15 @@ export function AlterationForm() {
     zipcode: "",
     service: "",
     expert: "",
+    date: "",
+    time: "",
   })
 
   const availableExperts = expertsByZip[formData.zipcode] || []
+
+  const selectedExpert = availableExperts.find(
+      (e) => e.name === formData.expert
+    )
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -85,6 +107,8 @@ export function AlterationForm() {
             </h3>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid sm:grid-cols-2 gap-4">
+
+                {/* Name */}
                 <FieldGroup>
                   <Field>
                     <FieldLabel className="text-sm font-medium text-foreground">First Name</FieldLabel>
@@ -111,6 +135,7 @@ export function AlterationForm() {
                 </FieldGroup>
               </div>
 
+              {/* Email */}
               <FieldGroup>
                 <Field>
                   <FieldLabel className="text-sm font-medium text-foreground">Email</FieldLabel>
@@ -124,6 +149,7 @@ export function AlterationForm() {
                 </Field>
               </FieldGroup>
 
+              {/* Phone */}
               <FieldGroup>
                 <Field>
                   <FieldLabel className="text-sm font-medium text-foreground">Phone</FieldLabel>
@@ -136,7 +162,7 @@ export function AlterationForm() {
                 </Field>
               </FieldGroup>
 
-
+              {/* Zip Code */}
               <FieldGroup>
                 <Field> 
                   <FieldLabel className="text-sm font-medium text-foreground"> ZIP Code (33602 or 33544)  </FieldLabel>
@@ -153,32 +179,50 @@ export function AlterationForm() {
               </FieldGroup>
 
 
-
+            {/* Expert Selection */}
             {formData.zipcode && (
             <>
               <FieldGroup> 
                 <Field>
                   <FieldLabel className="text-sm font-medium text-foreground">Expert Selection</FieldLabel>
-                      <select
-                        value={formData.expert}
-                        onChange={(e) => setFormData({ ...formData, expert: e.target.value })}
-                        className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-                        required
-                        disabled={!formData.zipcode}
-                      >
-                        <option value="">
-                          {formData.zipcode ? "Select an expert" : "Enter ZIP first"}
+                    <select
+                      value={formData.expert}
+                      onChange={(e) => setFormData({ ...formData, expert: e.target.value })}
+                      className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                      required
+                      disabled={!formData.zipcode}
+                    >
+                      <option value="">
+                        {formData.zipcode ? "Select an expert" : "Enter ZIP first"}
+                      </option>
+                          
+                      {availableExperts.map((expert) => (
+                        <option key={expert.name} value={expert.name}>
+                          {expert.name}
                         </option>
+                      ))}
+                    </select>
+                </Field>
 
-                        {availableExperts.map((expert) => (
-                          <option key={expert} value={expert}>
-                            {expert}
-                          </option>
-                        ))}
-                      </select>
+                <Field>
+                    {formData.expert && (
+                      <div className="mt-3 text-sm text-muted-foreground flex items-start gap-2">
+                        <MapPin className="h-4 w-4 mt-0.5" />
+                        <span>
+                        {
+                        availableExperts.find(
+                        (e) => e.name === formData.expert
+                        )?.address
+                        }
+                        </span>
+                      </div>
+                  )}
                 </Field>
               </FieldGroup>
 
+        
+              
+              {/* Service Type */}
               <FieldGroup>
                 <Field>
                   <FieldLabel className="text-sm font-medium text-foreground">Service Type</FieldLabel>
@@ -196,6 +240,58 @@ export function AlterationForm() {
                       </select>
                 </Field>
               </FieldGroup>
+
+
+              {/* Date Selection */}
+              <FieldGroup>
+                <Field>
+                  <FieldLabel className="text-sm font-medium text-foreground">
+                    Preferred Date
+                  </FieldLabel>
+                  <Input
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) =>
+                      setFormData({ ...formData, date: e.target.value })
+                    }
+                    className="mt-2"
+                    required
+                  />
+                </Field>
+              </FieldGroup>
+
+              {/* Time Selection */}
+              <FieldGroup>
+                <Field>
+                  <FieldLabel className="text-sm font-medium text-foreground">Select Time</FieldLabel>
+                    <select
+                      value={formData.time}
+                      onChange={(e) =>
+                      setFormData({ ...formData, time: e.target.value })
+                      }
+                      className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                      required
+                    >
+                      <option value="">Select a time</option>
+                      <option value="08:00">8:00 AM</option>
+                      <option value="09:00">9:00 AM</option>
+                      <option value="10:00">10:00 AM</option>
+                      <option value="11:00">11:00 AM</option>
+                      <option value="12:00">12:00 PM</option>
+                      <option value="01:00">01:00 PM</option>
+                      <option value="02:00">02:00 PM</option>
+                      <option value="03:00">03:00 PM</option>
+                      <option value="04:00">04:00 PM</option>
+                      <option value="05:00">05:00 PM</option>
+                      <option value="06:00">06:00 PM</option> 
+                    </select>
+                </Field>
+              </FieldGroup> 
+
+
+
+
+
             </>
             )}
 

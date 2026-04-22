@@ -1,46 +1,37 @@
-"use client"
-
+// components/product-card.tsx
 import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { ShoppingBag } from "lucide-react"
+import Link from "next/link"
 
-interface ProductCardProps {
+type Product = {
   name: string
+  category: string
+  subcategory: string
   price: number
   image: string
-  category: string
 }
 
-export function ProductCard({ name, price, image, category }: ProductCardProps) {
+interface ProductCardProps {
+  product: Product
+}
+
+export function ProductCard({ product }: ProductCardProps) {
   return (
-    <div className="group">
-      <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted">
-        <Image
-          src={image}
-          alt={name}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-foreground/0 transition-colors group-hover:bg-foreground/5" />
-        <Button 
-          size="icon" 
-          className="absolute bottom-4 right-4 opacity-0 translate-y-2 transition-all group-hover:opacity-100 group-hover:translate-y-0 bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-        >
-          <ShoppingBag className="h-4 w-4" />
-          <span className="sr-only">Add to cart</span>
-        </Button>
+    <Link href={`/product/${encodeURIComponent(product.name.toLowerCase().replace(/\s+/g, '-'))}`}>
+      <div className="group relative">
+        <div className="aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
+          <Image
+            src={product.image}
+            alt={product.name}
+            width={500}
+            height={500}
+            className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+        <div className="mt-4">
+          <h3 className="text-sm font-medium text-gray-900">{product.name}</h3>
+          <p className="mt-1 text-sm text-gray-500">${product.price}</p>
+        </div>
       </div>
-      <div className="mt-4">
-        <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-          {category}
-        </p>
-        <h3 className="mt-1 font-serif text-lg font-medium text-foreground">
-          {name}
-        </h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          ${price.toFixed(2)}
-        </p>
-      </div>
-    </div>
+    </Link>
   )
 }

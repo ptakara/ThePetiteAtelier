@@ -10,6 +10,7 @@ const products = [
     price: 245,
     image: "/images/product-blazer.jpg",
     category: "outerwear",
+    subcategory: "blazers",
   },
   {
     id: 2,
@@ -17,6 +18,7 @@ const products = [
     price: 189,
     image: "/images/product-dress.jpg",
     category: "dresses",
+    subcategory: "midi",
   },
   {
     id: 3,
@@ -24,6 +26,7 @@ const products = [
     price: 165,
     image: "/images/product-trousers.jpg",
     category: "bottoms",
+    subcategory: "trousers",
   },
   {
     id: 4,
@@ -31,6 +34,7 @@ const products = [
     price: 145,
     image: "/images/product-blouse.jpg",
     category: "tops",
+    subcategory: "blouses",
   },
 ]
 
@@ -71,7 +75,9 @@ export function ShopSection() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {products.slice().reverse().map((product) => (
-            <ProductCard key={product.name} {...product} />
+            <ProductCard
+            key={product.id}
+            product={product} />
           ))}
         </div>
 

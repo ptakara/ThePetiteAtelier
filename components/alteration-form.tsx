@@ -5,30 +5,100 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import dynamic from "next/dynamic"
 import { MapPin, Phone, Mail, Clock } from "lucide-react"
+import { ExpertMap } from "@/components/expert-map"
+import { toast } from "sonner"
 
 
 type Expert = {
   name: string
   address: string
+  lat: number
+  lng: number
+  phone: string
+  email: string
 }
 
 const expertsByZip: Record<string, Expert[]> = {
   "33602": [
-    { name: "Alterations World", address: "120 Main St, Tampa, FL 33602" },
-    { name: "Alterations by Seamstress Lena", address: "45 River Ave, Tampa, FL 33602" },
-    { name: "Tailor Made Alterations", address: "88 Downtown Blvd, Tampa, FL 33602" },
-    { name: "Affordable Sewing Services", address: "210 Harbor Rd, Tampa, FL 33602" },
-    { name: "Kathleen's Kreations", address: "33 Palm St, Tampa, FL 33602" },
+    {
+      name: "Alterations World",
+      address: "120 Main St, Tampa, FL 33602",
+      lat: 27.9506,
+      lng: -82.4572,
+      phone: "(813) 555-1001",
+      email: "alterationsworld@example.com",
+    },
+    {
+      name: "Alterations by Seamstress Lena",
+      address: "45 River Ave, Tampa, FL 33602",
+      lat: 27.9489,
+      lng: -82.4586,
+      phone: "(813) 555-1002",
+      email: "lena.alterations@example.com",
+    },
+    {
+      name: "Tailor Made Alterations",
+      address: "88 Downtown Blvd, Tampa, FL 33602",
+      lat: 27.9518,
+      lng: -82.4561,
+      phone: "(813) 555-1003",
+      email: "tailormade@example.com",
+    },
+    {
+      name: "Affordable Sewing Services",
+      address: "210 Harbor Rd, Tampa, FL 33602",
+      lat: 27.9467,
+      lng: -82.4599,
+      phone: "(813) 555-1004",
+      email: "affordablesewing@example.com",
+    },
+    {
+      name: "Kathleen's Kreations",
+      address: "33 Palm St, Tampa, FL 33602",
+      lat: 27.9532,
+      lng: -82.4553,
+      phone: "(813) 555-1005",
+      email: "kathleen.kreations@example.com",
+    },
   ],
 
   "33544": [
-    { name: "Ella's Alterations LLC", address: "10 Westview Dr, Wesley Chapel, FL 33544" },
-    { name: "Kim's Tailor Shop", address: "55 Oak Ln, Wesley Chapel, FL 33544" },
-    { name: "Sew Good", address: "120 Market St, Wesley Chapel, FL 33544" },
-    { name: "Alexander's Alterations & Tailoring", address: "9 Heritage Pkwy, Wesley Chapel, FL 33544" },
+    {
+      name: "Ella's Alterations LLC",
+      address: "10 Westview Dr, Wesley Chapel, FL 33544",
+      lat: 28.1871,
+      lng: -82.3563,
+      phone: "(813) 555-2001",
+      email: "ellas.alterations@example.com",
+    },
+    {
+      name: "Kim's Tailor Shop",
+      address: "55 Oak Ln, Wesley Chapel, FL 33544",
+      lat: 28.1862,
+      lng: -82.3581,
+      phone: "(813) 555-2002",
+      email: "kim.tailorshop@example.com",
+    },
+    {
+      name: "Sew Good",
+      address: "120 Market St, Wesley Chapel, FL 33544",
+      lat: 28.1884,
+      lng: -82.3549,
+      phone: "(813) 555-2003",
+      email: "sewgood@example.com",
+    },
+    {
+      name: "Alexander's Alterations & Tailoring",
+      address: "9 Heritage Pkwy, Wesley Chapel, FL 33544",
+      lat: 28.1855,
+      lng: -82.3592,
+      phone: "(813) 555-2004",
+      email: "alexanders.tailoring@example.com",
+    },
   ],
-}
+};
 
 export function AlterationForm() {
   const [formData, setFormData] = useState({
@@ -51,15 +121,53 @@ export function AlterationForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission
+
     console.log("[v0] Form submitted:", formData)
+
+    const existing = JSON.parse(localStorage.getItem("appointments") || "[]")
+
+    const newAppointment = {
+      ...formData,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+    }
+
+    localStorage.setItem(
+      "appointments",
+      JSON.stringify([...existing, newAppointment])
+    )
+
+    toast.success("Appointment submitted successfully!", {
+      description: (
+        <div className="mt-2 flex gap-3">
+          <a href="/appointments" className="underline text-sm">
+            View My Appointments
+          </a>
+        </div>
+      ),
+    })
+
+    setFormData({
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      zipcode: "",
+      service: "",
+      expert: "",
+      date: "",
+      time: "",
+    })
+
   }
 
+
   return (
-    <section id="contact" className="py-20 lg:py-28">
+    <section id="contact" className="py-10 lg:py-15">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
-          {/* Contact info */}
+
+          {/* Alteration Services Intro */}
           <div>
             <p className="text-sm font-medium tracking-widest text-accent uppercase mb-3">
               Alteration Services
@@ -73,34 +181,67 @@ export function AlterationForm() {
 
             <div className="mt-10 space-y-6">
            
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                  <Phone className="h-5 w-5 text-foreground" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-foreground">Call Us</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    (555) 123-4567
-                  </p>
-                </div>
-              </div>
+          
+            {/* Phone and Email of Expert Selected */}
+            {selectedExpert && (
+              <div className="mt-6 space-y-6">
 
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                  <Mail className="h-5 w-5 text-foreground" />
+                {/* Phone */}
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                    <Phone className="h-5 w-5 text-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">Call  </h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {selectedExpert.phone}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-medium text-foreground">Email</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    hello@petiteatelier.com
-                  </p>
-                </div>
-              </div>
 
+                {/* Email */}
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                    <Mail className="h-5 w-5 text-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">Email</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {selectedExpert.email}
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* Display Map */}
+            {selectedExpert && (
+              <div className="mt-4">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                    <MapPin className="h-5 w-5 text-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">Address</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {selectedExpert.address}
+                    </p>
+                  </div>
+                </div>
+
+                <ExpertMap
+                  lat={selectedExpert.lat}
+                  lng={selectedExpert.lng}
+                  name={selectedExpert.name}
+                />
+              </div>
+            )}      
             </div>
           </div>
 
-          {/* Contact form */}
+
+          {/* Appointment form */}
           <div className="bg-card border border-border rounded-lg p-8">
             <h3 className="font-serif text-xl font-medium text-foreground mb-6">
               Fill out the form:
@@ -203,24 +344,8 @@ export function AlterationForm() {
                       ))}
                     </select>
                 </Field>
-
-                <Field>
-                    {formData.expert && (
-                      <div className="mt-3 text-sm text-muted-foreground flex items-start gap-2">
-                        <MapPin className="h-4 w-4 mt-0.5" />
-                        <span>
-                        {
-                        availableExperts.find(
-                        (e) => e.name === formData.expert
-                        )?.address
-                        }
-                        </span>
-                      </div>
-                  )}
-                </Field>
               </FieldGroup>
 
-        
               
               {/* Service Type */}
               <FieldGroup>
@@ -287,14 +412,8 @@ export function AlterationForm() {
                     </select>
                 </Field>
               </FieldGroup> 
-
-
-
-
-
             </>
             )}
-
 
               <Button type="submit" size="lg" className="w-full bg-foreground text-background hover:bg-foreground/90">
                 Submit

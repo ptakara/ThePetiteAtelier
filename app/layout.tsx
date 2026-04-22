@@ -4,6 +4,8 @@ import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Header } from '@/components/header'
 import './globals.css'
+import "leaflet/dist/leaflet.css"
+import { Toaster } from "sonner"
 
 const cormorant = Cormorant_Garamond({ 
   subsets: ["latin"],
@@ -57,6 +59,11 @@ export default function RootLayout({
           {children}
         </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
+        <Toaster 
+          position="top-center" 
+          richColors   
+          toastOptions={{className: "text-base px-6 py-4",}}
+        />
       </body>
     </html>
   )

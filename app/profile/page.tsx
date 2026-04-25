@@ -2,6 +2,16 @@
 
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
+import { expertsByZip } from "@/lib/experts"
+
+type Appointment = {
+  id: string
+  service: string
+  expert: string
+  date: string
+  time: string
+  zipcode: string
+}
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("My Orders")
@@ -11,6 +21,13 @@ export default function ProfilePage() {
   const [lastName, setLastName] = useState("")
   const [address, setAddress] = useState("")
 
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  
+  const getExpert = (zipcode: string, name: string) => {
+    const experts = expertsByZip[zipcode] || []
+    return experts.find((e) => e.name === name)
+  }
+
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const favoriteItem = {
@@ -18,6 +35,7 @@ export default function ProfilePage() {
     image: "/images/product1.jpg",
   }
 
+  const alterationAppointments = appointments
   const isOrders = activeTab === "My Orders"
 
   // Load saved data safely
@@ -31,7 +49,14 @@ export default function ProfilePage() {
     if (savedFirstName) setFirstName(savedFirstName)
     if (savedLastName) setLastName(savedLastName)
     if (savedAddress) setAddress(savedAddress)
+  
+    const storedAppointments = JSON.parse(
+      localStorage.getItem("appointments") || "[]"
+    )
+    setAppointments(storedAppointments)
   }, [])
+
+
 
   // Avatar upload
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,14 +82,62 @@ export default function ProfilePage() {
         return <Card title="My Measurements" full />
       case "Preferences":
         return <Card title="My Preferences" full />
-      case "Alterations":
-        return <Card title="Alteration Services" full />
+      case "My Alteration Services":
+        return (
+          <div className="space-y-4">
+            
+            {/* Header Card */}
+            <div className="border rounded-md p-4 bg-card">
+              <p className="text-sm text-muted-foreground">
+                To cancel or view full details of your alteration appointments, please visit  <a href="/appointments" className="underline text-sm"> My Appointments</a>
+              </p>
+            </div>
+
+            {/* Appointments List */}
+            {alterationAppointments.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No alteration appointments yet.
+              </p>
+            ) : (
+             alterationAppointments.map((appt) => {
+              const expert = getExpert(appt.zipcode, appt.expert)
+
+              return (
+                <div
+                  key={appt.id}
+                  className="border rounded-md p-3 bg-card"
+                >
+                  <p className="text-sm text-muted-foreground">
+                    {appt.date} at {appt.time}
+                  </p>
+
+                  <p className="font-medium">{appt.service}</p>
+
+                  <p className="text-sm mt-2">
+                    Expert: {appt.expert}
+                  </p>
+
+                  {expert && (
+                    <div className="text-sm mt-2 space-y-1 text-muted-foreground">
+                      <p>📍 {expert.address}</p>
+                    </div>
+                  )}
+                </div>
+              )
+            })
+            )}
+          </div>
+        )
       case "Rewards":
         return <Card title="Rewards Info" full showEdit={false} />
       default:
         return null
     }
   }
+
+  
+
+
 
   return (
     <div className="min-h-screen bg-background px-6 py-10">
@@ -134,7 +207,7 @@ export default function ProfilePage() {
             "Payment Method",
             "Measurements",
             "Preferences",
-            "Alterations",
+            "My Alteration Services",
             "Rewards",
           ].map((tab) => (
             <button

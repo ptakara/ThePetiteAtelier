@@ -7,7 +7,7 @@ export function HeroSection() {
   return (
     <section className="relative">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center py-7 lg:py-11">
+        <div className="grid lg:grid-cols-2 gap-12 items-center py-7 lg:py-15">
           {/* Content */}
           <div className="order-2 lg:order-1">
             <p className="text-sm font-medium tracking-widest text-accent uppercase mb-4">

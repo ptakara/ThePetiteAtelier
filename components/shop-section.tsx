@@ -1,9 +1,10 @@
+//app/components/shop-section.tsx
+
 import Link from "next/link"
 import { ProductCard } from "@/components/product-card"
-import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
 
-const products = [
+
+const productsHome = [
   {
     id: 1,
     name: "Tailored Linen Blazer",
@@ -41,7 +42,7 @@ const products = [
 
 export function ShopSection() {
   return (
-    <section id="shop" className="py-20 lg:py-28 bg-card">
+    <section id="shop" className="py-20 lg:py-45 bg-card">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         {/* Section header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-5">
@@ -61,28 +62,23 @@ export function ShopSection() {
         {/* Product grid */}
          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
           {["Tops", "Bottoms", "Dresses", "Outerwear"].map((category) => (
-  <Link
-    key={category}
-    href={`/shop/${category.toLowerCase()}`}
-    className="group flex items-center justify-center py-2 px-6 border border-border rounded-lg hover:border-foreground transition-colors"
-  >
-    <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-      {category}
-    </span>
-  </Link>
-))}
+            <Link
+              key={category}
+              href={`/shop/${category.toLowerCase()}`}
+              className="group flex items-center justify-center py-2 px-6 border border-border rounded-lg hover:border-foreground transition-colors"
+            >
+              <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                {category}
+              </span>
+            </Link>
+          ))} 
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.slice().reverse().map((product) => (
-            <ProductCard
-            key={product.id}
-            product={product} />
+          {productsHome.slice().reverse().map((product) => (
+            <ProductCard key={product.id} product={product} showFavorite={false} />
           ))}
         </div>
-
-        {/* Categories */}
-       
       </div>
     </section>
   )

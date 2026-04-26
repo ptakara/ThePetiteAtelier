@@ -1,3 +1,5 @@
+// components/header.tsx
+
 "use client"
 
 import { useState } from "react"
@@ -14,11 +16,13 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
+import { Search } from "lucide-react"
+
 
 const clothingCategories = [
   {
     name: "Tops",
-    href: "/shop/tops",
+    href: "/shop/tops",  
     items: [
       { name: "Blouses", href: "/shop/tops?subcategory=blouses" },
       { name: "Shirts", href: "/shop/tops?subcategory=shirts" },
@@ -72,9 +76,19 @@ const mobileNavigation = [
 ]
 
 export function Header() {
+  const [searchQuery, setSearchQuery] = useState("")
   const [cartCount] = useState(0)
   const [favoritesCount] = useState(0)
-  const isLoggedIn = false // replace with auth logic
+
+  const isLoggedIn = false
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!searchQuery.trim()) return
+
+    window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`
+  }
 
   return (
     
@@ -137,23 +151,35 @@ export function Header() {
               <NavigationMenuItem key={category.name}>
                 {category.items ? (
                   <>
-                    <NavigationMenuTrigger>
-                      {category.name}
-                    </NavigationMenuTrigger>
 
-                    <NavigationMenuContent>
-                      <ul className="grid w-48 gap-1 p-3">
-                        {category.items.map((item) => (
-                          <li key={item.name}>
-                            <NavigationMenuLink asChild>
-                              <Link href={item.href} className="block px-3 py-2 text-sm">
-                                {item.name}
-                              </Link>
-                            </NavigationMenuLink>
-                          </li>
-                        ))}
-                      </ul>
-                    </NavigationMenuContent>
+                  <NavigationMenuTrigger className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+                    {category.name}
+                  </NavigationMenuTrigger>
+        
+                  <NavigationMenuContent>
+                    <ul className="grid w-48 gap-1 p-3">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link
+                            href={category.href}
+                            className="block px-3 py-2 text-sm font-small text-foreground"
+                          >
+                            All {category.name}
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+
+                      {category.items.map((item) => (
+                        <li key={item.name}>
+                          <NavigationMenuLink asChild>
+                            <Link href={item.href} className="block px-3 py-2 text-sm">
+                              {item.name}
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      ))}
+                    </ul>                      
+                  </NavigationMenuContent>
                   </>
                 ) : (
                   <NavigationMenuLink asChild>
@@ -171,20 +197,42 @@ export function Header() {
           </NavigationMenuList>
         </NavigationMenu>
 
+        {/* Search bar */}
+        <form
+          onSubmit={handleSearch}
+          className="hidden lg:flex items-center mx-4"
+        >
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search products, alterations..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-72 rounded-full border border-border bg-background px-10 py-2 text-sm shadow-sm
+              focus:outline-none focus:ring-2 focus:ring-foreground focus:border-foreground"
+            />
+
+            {/* magnifying glass icon inside input */}
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <Search className="h-4 w-4" />
+          </span>
+          </div>
+        </form>
+
         {/* Right side icons */}
         <div className="flex items-center gap-2 lg:gap-4">
           {/* Favorites */}
         <Button
-  asChild
-  variant="ghost"
-  size="icon"
-  className="relative text-muted-foreground hover:text-foreground"
->
-  <Link href="/favorites">
-    <Heart className="h-5 w-5" />
-    <span className="sr-only">Favorites</span>
-  </Link>
-</Button>
+          asChild
+          variant="ghost"
+          size="icon"
+          className="relative text-muted-foreground hover:text-foreground"
+        >
+          <Link href="/favorites">
+            <Heart className="h-5 w-5" />
+            <span className="sr-only">Favorites</span>
+          </Link>
+        </Button>
 
           {/* Shopping Bag */}
         <Button asChild variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">

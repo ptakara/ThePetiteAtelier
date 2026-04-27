@@ -6,8 +6,8 @@ import { ArrowRight } from "lucide-react"
 export function HeroSection() {
   return (
     <section className="relative">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center py-7 lg:py-15">
+      <div className="mx-auto max-w-7x2 px-6 lg:px-12">
+        <div className="grid lg:grid-cols-2 gap-12 items-center py-7 lg:py-10">
           {/* Content */}
           <div className="order-2 lg:order-1">
             <p className="text-sm font-medium tracking-widest text-accent uppercase mb-4">
@@ -24,11 +24,10 @@ export function HeroSection() {
               <Button asChild size="lg" className="bg-foreground text-background hover:bg-foreground/90">
                 <Link href="#shop">
                   Shop Collection
-                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="border-foreground text-foreground hover:bg-foreground hover:text-background">
-                <Link href="/book-consultation">
+                <Link href="#alterations">
                   Alteration Services
                 </Link>
               </Button>
@@ -38,9 +37,9 @@ export function HeroSection() {
           {/* Image */}
           <div className="order-1 lg:order-2 relative flex justify-center">
             <div className="w-4/6 lg:w-6/8">
-              <div className="aspect-[8/8] overflow-hidden rounded-lg bg-muted">
+              <div className="aspect-[8/10] overflow-hidden rounded-lg bg-muted">
                 <Image
-                  src="/images/hero-model.jpg"
+                  src="/images/hero.png"
                   alt="Model wearing petite tailored clothing"
                   fill
                   className="object-cover"

@@ -1,8 +1,14 @@
+//app/profile/page.tsx
+
 "use client"
 
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { expertsByZip } from "@/lib/experts"
+import { useRouter } from "next/navigation"
+import { LogOut } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
 
 type Appointment = {
   id: string
@@ -13,13 +19,26 @@ type Appointment = {
   zipcode: string
 }
 
+type FavoriteProduct = {
+  id: number
+  name: string
+  price: number
+  image: string
+}
+
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("My Orders")
 
   const [avatar, setAvatar] = useState<string | null>(null)
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
-  const [address, setAddress] = useState("")
+  const [street, setStreet] = useState("")
+  const [apartment, setApartment] = useState("")
+  const [city, setCity] = useState("")
+  const [state, setState] = useState("")
+  const [zip, setZip] = useState("")
+  const [country, setCountry] = useState("")
+
 
   const [appointments, setAppointments] = useState<Appointment[]>([])
   
@@ -43,12 +62,23 @@ export default function ProfilePage() {
     const savedAvatar = localStorage.getItem("avatar")
     const savedFirstName = localStorage.getItem("firstName")
     const savedLastName = localStorage.getItem("lastName")
-    const savedAddress = localStorage.getItem("address")
+    const savedStreet = localStorage.getItem("street")
+    const savedApartment = localStorage.getItem("apartment")
+    const savedCity = localStorage.getItem("city")
+    const savedState = localStorage.getItem("state")
+    const savedZip = localStorage.getItem("zip")
+    const savedCountry = localStorage.getItem("country")
+    const savedFavorites = JSON.parse(localStorage.getItem("favorites") || "[]")
+    setFavorites(savedFavorites)
 
     if (savedAvatar) setAvatar(savedAvatar)
     if (savedFirstName) setFirstName(savedFirstName)
     if (savedLastName) setLastName(savedLastName)
-    if (savedAddress) setAddress(savedAddress)
+    if (savedStreet) setStreet(savedStreet)
+    if (savedApartment) setApartment(savedApartment)
+    if (savedCity) setCity(savedCity)
+    if (savedState) setState(savedState)
+    if (savedZip) setZip(savedZip)
   
     const storedAppointments = JSON.parse(
       localStorage.getItem("appointments") || "[]"
@@ -78,8 +108,6 @@ export default function ProfilePage() {
     switch (activeTab) {
       case "Payment Method":
         return <Card title="Payment Method" full />
-      case "Measurements":
-        return <Card title="My Measurements" full />
       case "Preferences":
         return <Card title="My Preferences" full />
       case "My Alteration Services":
@@ -135,7 +163,16 @@ export default function ProfilePage() {
     }
   }
 
-  
+  const [favorites, setFavorites] = useState<FavoriteProduct[]>([])
+
+  const router = useRouter()
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn")
+    localStorage.removeItem("userEmail")
+
+    router.push("/login")
+  }
 
 
 
@@ -178,23 +215,49 @@ export default function ProfilePage() {
             <div className="flex-1">
               <div className="flex justify-between items-start">
                 <div>
-                  <h1 className="text-2xl font-semibold">
-                    {firstName || "Username"}
-                  </h1>
+                  <div className="flex items-center gap-3">
+                    <h1 className="text-2xl font-semibold">
+                      {firstName || "Username"}
+                    </h1>
+
+                    <Link
+                      href="/profile/edit"
+                      className="text-sm underline text-muted-foreground hover:text-foreground"
+                    >
+                      Edit Profile
+                    </Link>
+                  </div>
 
                   <span className="inline-block mt-2 px-3 py-1 text-sm rounded-full bg-accent text-background">
-                    Member Type
+                    Silver Member
                   </span>
                 </div>
-                
-                <Link href="/profile/edit" className="text-sm underline whitespace-nowrap ml-auto">
-                  Edit Profile
-                </Link>
+
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  className="flex items-center gap-2 border-black text-black hover:bg-black hover:text-white transition"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+
               </div>
-              <div className="mt-6 space-y-2 text-sm text-muted-foreground">
-                <p>{firstName || "First Name"}</p>
-                <p>{lastName || "Last Name"}</p>
-                <p>{address || "Address"}</p>
+                <div className="mt-4 space-y-2 text-md text-muted-foreground">
+                <p className="text-foreground font-medium tracking-wide">
+                  {firstName || "First"} {lastName || "Last"}
+                </p>
+
+                <p className="tracking-wide">
+                  {street || "Street Address"}
+                  {apartment ? `, ${apartment}` : ""}
+                </p>
+
+                <p className="tracking-wide">
+                  {city || "City"}
+                  {state ? `, ${state}` : ""}
+                  {zip ? ` ${zip}` : ""}
+                </p>
               </div>
             </div>
           </div>
@@ -205,7 +268,6 @@ export default function ProfilePage() {
           {[
             "My Orders",
             "Payment Method",
-            "Measurements",
             "Preferences",
             "My Alteration Services",
             "Rewards",
@@ -230,33 +292,49 @@ export default function ProfilePage() {
           <div className="grid md:grid-cols-2 gap-6">
             <Card title="My Orders" />
 
-            <div className="border rounded-md p-4 h-64 bg-card">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-medium text-foreground">
-                  My Favorites
-                </h3>
+          <div className="border rounded-md p-4 h-96 bg-card overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-medium text-foreground">
+              My Favorites
+            </h3>
 
-                <Link
-                  href="/favorites"
-                  className="text-sm text-accent hover:underline"
-                >
-                  View all →
-                </Link>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <img
-                  src={favoriteItem.image}
-                  alt={favoriteItem.name}
-                  className="w-16 h-16 object-cover rounded-md"
-                />
-                <p className="text-sm text-foreground">
-                  {favoriteItem.name}
-                </p>
-              </div>
-            </div>
+            <Link
+              href="/favorites"
+              className="text-sm text-accent hover:underline"
+            >
+              View all →
+            </Link>
           </div>
-        ) : (
+
+          {favorites.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No favorite items yet.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {favorites.map((item) => (
+                <div key={item.id} className="flex items-center gap-4">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-16 h-16 object-cover rounded-md"
+                  />
+
+                  <div>
+                    <p className="text-sm text-foreground">
+                      {item.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      ${item.price}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+                  </div>
+                ) : (
           renderTabContent()
         )}
       </div>
@@ -276,7 +354,7 @@ function Card({
 }) {
   return (
     <div
-      className={`border rounded-md p-4 h-64 relative bg-card ${
+      className={`border rounded-md p-4 h-96 relative bg-card ${
         full ? "w-full" : ""
       }`}
     >

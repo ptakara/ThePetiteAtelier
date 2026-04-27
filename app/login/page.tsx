@@ -1,3 +1,5 @@
+//app/login/page.tsx
+
 "use client"
 
 import { useState } from "react"
@@ -17,16 +19,15 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
   e.preventDefault()
-
   if (email === "user1@gmail.com" && password === "user123") {
-    console.log("Login successful")
+    localStorage.setItem("isLoggedIn", "true")
+    localStorage.setItem("userEmail", email)
 
-    // redirect to profile (or whatever route you passed in)
     router.push(redirect)
-  } else {
+  }else {
     alert("Invalid email or password")
   }
-}
+  }
 
   return (
     <div className="min-h-screen flex items-start justify-center bg-background px-4 pt-24">
@@ -42,7 +43,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder="yourEmail@example.com"
               className="mt-1"
               required
             />

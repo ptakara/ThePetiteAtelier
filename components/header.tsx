@@ -2,7 +2,6 @@
 
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Menu, ShoppingBag, Heart, User } from "lucide-react"
@@ -17,7 +16,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
 import { Search } from "lucide-react"
-
+import { useState, useEffect } from "react"
 
 const clothingCategories = [
   {
@@ -77,10 +76,42 @@ const mobileNavigation = [
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [cartCount] = useState(0)
+  const [cartCount, setCartCount] = useState(0)
   const [favoritesCount] = useState(0)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)  
+  const [badgeBounce, setBadgeBounce] = useState(false)
 
-  const isLoggedIn = false
+
+  useEffect(() => {
+    setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true")
+  }, [])
+
+
+  useEffect(() => {
+    const updateCartCount = () => {
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]")
+
+      const count = cart.reduce(
+        (total: number, item: { quantity?: number }) =>
+          total + (item.quantity || 1),
+        0
+      )
+      setCartCount(count)
+
+      setBadgeBounce(true)
+
+      setTimeout(() => {
+        setBadgeBounce(false)
+      }, 300)
+    }
+
+    updateCartCount()
+    window.addEventListener("storage", updateCartCount)
+    return () => {
+      window.removeEventListener("storage", updateCartCount)
+    }
+  }, [])
+  
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -89,6 +120,9 @@ export function Header() {
 
     window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`
   }
+
+  
+
 
   return (
     
@@ -219,7 +253,9 @@ export function Header() {
           </div>
         </form>
 
-        {/* Right side icons */}
+
+
+        {/* Right Side Icons - FAVORITE / BAG / PROFILE ICONS */}
         <div className="flex items-center gap-2 lg:gap-4">
           {/* Favorites */}
         <Button
@@ -236,15 +272,25 @@ export function Header() {
 
           {/* Shopping Bag */}
         <Button asChild variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
-          <Link href="/checkout">
+          <Link href="/bag" className="relative">
             <ShoppingBag className="h-5 w-5" />
-              <span className="sr-only">Shopping bag</span>
+            {cartCount > 0 && (
+             <span
+                className={`absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-medium text-background transition-transform duration-300 ${
+                  badgeBounce ? "scale-125" : "scale-100"
+                }`}
+              >
+                {cartCount}
+              </span>
+            )}
+
+            <span className="sr-only">Shopping bag</span>
           </Link>
         </Button>
 
           {/* User Account */}
           <Button asChild variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-            <Link href="/login?redirect=/profile">
+            <Link href={isLoggedIn ? "/profile" : "/login?redirect=/profile"}>
               <User className="h-5 w-5" />
                 <span className="sr-only">Account</span>
             </Link>

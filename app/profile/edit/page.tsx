@@ -10,13 +10,23 @@ export default function EditProfilePage() {
 
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
-  const [address, setAddress] = useState("")
+  const [street, setStreet] = useState("")
+  const [apartment, setApartment] = useState("")
+  const [city, setCity] = useState("")
+  const [state, setState] = useState("")
+  const [zip, setZip] = useState("")
+  const [country, setCountry] = useState("")
 
   // Load saved data
   useEffect(() => {
     setFirstName(localStorage.getItem("firstName") || "")
     setLastName(localStorage.getItem("lastName") || "")
-    setAddress(localStorage.getItem("address") || "")
+    setStreet(localStorage.getItem("street") || "")
+    setApartment(localStorage.getItem("apartment") || "")
+    setCity(localStorage.getItem("city") || "")
+    setState(localStorage.getItem("state") || "")
+    setZip(localStorage.getItem("zip") || "")
+    setCountry(localStorage.getItem("country") || "")
   }, [])
 
   const handleSave = (e: React.FormEvent) => {
@@ -24,7 +34,12 @@ export default function EditProfilePage() {
 
     localStorage.setItem("firstName", firstName)
     localStorage.setItem("lastName", lastName)
-    localStorage.setItem("address", address)
+    localStorage.setItem("street", street)
+    localStorage.setItem("apartment", apartment)
+    localStorage.setItem("city", city)
+    localStorage.setItem("state", state)
+    localStorage.setItem("zip", zip)
+    localStorage.setItem("country", country)
 
     router.push("/profile")
   }
@@ -64,18 +79,90 @@ export default function EditProfilePage() {
             />
           </div>
 
+          {/* STREET */}
           <div>
             <label className="text-sm text-muted-foreground">
-              Address
+              Street Address
             </label>
             <Input
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Address"
+              value={street}
+              onChange={(e) => setStreet(e.target.value)}
+              placeholder=""
               className="mt-1"
               required
             />
           </div>
+
+          {/* APARTMENT */}
+          <div>
+            <label className="text-sm text-muted-foreground">
+              Apartment / Suite (optional)
+            </label>
+            <Input
+              value={apartment}
+              onChange={(e) => setApartment(e.target.value)}
+              placeholder="optional"
+              className="mt-1"
+            />
+          </div>
+
+          {/* CITY + STATE */}
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label className="text-sm text-muted-foreground">
+                City
+              </label>
+              <Input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder=""
+                className="mt-1"
+                required
+              />
+            </div>
+
+            <div className="w-24">
+              <label className="text-sm text-muted-foreground">
+                State
+              </label>
+              <Input
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                placeholder=""
+                className="mt-1"
+                required
+              />
+            </div>
+          </div>
+
+          {/* ZIP */}
+          <div>
+            <label className="text-sm text-muted-foreground">
+              ZIP Code
+            </label>
+            <Input
+              value={zip}
+              onChange={(e) => setZip(e.target.value)}
+              placeholder=""
+              className="mt-1"
+              required
+            />
+          </div>
+
+          {/* COUNTRY */}
+          <div>
+            <label className="text-sm text-muted-foreground">  
+              Country
+            </label>
+            <Input
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              placeholder=""
+              className="mt-1"
+              required
+            />
+          </div>
+
 
           <Button type="submit" className="w-full">
             Save Changes

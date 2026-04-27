@@ -27,7 +27,7 @@ const faqs = [
 
 export function StorySection() {
   return (
-    <section id="story" className="py-20 lg:py-28 bg-card">
+    <section id="story" className="py-20 lg:py-18 bg-card">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
           {/* Story content */}
@@ -53,22 +53,6 @@ export function StorySection() {
                 offering both ready-to-wear pieces and bespoke alterations to ensure you 
                 never have to settle for &quot;close enough.&quot;
               </p>
-            </div>
-
-            {/* Stats */}
-            <div className="mt-10 grid grid-cols-3 gap-8 border-t border-border pt-10">
-              <div>
-                <p className="font-serif text-3xl font-medium text-foreground">15K+</p>
-                <p className="text-sm text-muted-foreground mt-1">Happy Customers</p>
-              </div>
-              <div>
-                <p className="font-serif text-3xl font-medium text-foreground">50+</p>
-                <p className="text-sm text-muted-foreground mt-1">Styles Available</p>
-              </div>
-              <div>
-                <p className="font-serif text-3xl font-medium text-foreground">4.9</p>
-                <p className="text-sm text-muted-foreground mt-1">Star Rating</p>
-              </div>
             </div>
           </div>
 

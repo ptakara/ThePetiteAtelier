@@ -17,10 +17,31 @@ type CartItem = {
   quantity?: number
 }
 
+type SavedPayment = {
+  type: "credit-card"
+  cardholderName: string
+  last4: string
+  expiration: string
+}
+
+type SavedAddress = {
+  id: string
+  label: string
+  firstName: string
+  lastName: string
+  street: string
+  apartment?: string
+  city: string
+  state: string
+  zip: string
+}
+
+
 export default function CheckoutPage() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [paymentMethod, setPaymentMethod] = useState("credit-card")
   const [showSuccess, setShowSuccess] = useState(false)
+  const [cardNickname, setCardNickname] = useState("")
 
   const [shippingInfo, setShippingInfo] = useState({
     firstName: "",
@@ -32,9 +53,41 @@ export default function CheckoutPage() {
     zip: "",
   })
 
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
+  const [selectedAddressId, setSelectedAddressId] = useState("")
+
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("cart") || "[]")
     setCart(storedCart)
+    
+    const storedPayment = localStorage.getItem("savedPayment")
+    if (storedPayment) {
+      setSavedPayment(JSON.parse(storedPayment))
+    }
+
+    
+    const storedAddresses = JSON.parse(
+      localStorage.getItem("savedAddresses") || "[]"
+    )
+
+    setSavedAddresses(storedAddresses)
+
+    if (storedAddresses.length > 0) {
+      const defaultAddress = storedAddresses[0]
+
+      setSelectedAddressId(defaultAddress.id)
+
+      setShippingInfo({
+        firstName: defaultAddress.firstName,
+        lastName: defaultAddress.lastName,
+        street: defaultAddress.street,
+        apartment: defaultAddress.apartment || "",
+        city: defaultAddress.city,
+        state: defaultAddress.state,
+        zip: defaultAddress.zip,
+      })
+    }
+
   }, [])
 
   const merchandiseTotal = cart.reduce(
@@ -47,21 +100,54 @@ export default function CheckoutPage() {
   const tax = (merchandiseTotal - savings) * 0.07
   const subtotal = merchandiseTotal - savings + shippingFee + tax
   const router = useRouter()
+  const [cardNumber, setCardNumber] = useState("")
+  const [savedPayment, setSavedPayment] = useState<SavedPayment | null>(null)
+
+
+
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // clear cart
+    const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]")
+
+    const newOrder = {
+      orderNumber: `ORD-${Date.now()}`,
+      date: new Date().toISOString(),
+      items: cart,
+      merchandiseTotal,
+      savings,
+      shippingFee,
+      tax,
+      subtotal,
+
+      shippingAddress: `${shippingInfo.street}${shippingInfo.apartment ? `, ${shippingInfo.apartment}` : ""}, ${shippingInfo.city}, ${shippingInfo.state} ${shippingInfo.zip}`,
+
+      paymentLast4:
+      paymentMethod === "credit-card"
+        ? cardNumber.slice(-4)
+        : paymentMethod,
+
+      paymentMethod: {
+        cardNickname: cardNickname || "Saved Card",
+        last4: cardNumber.slice(-4),
+      },
+    }
+
+    localStorage.setItem(
+      "orders",
+      JSON.stringify([newOrder, ...existingOrders])
+    )
+
     localStorage.removeItem("cart")
     window.dispatchEvent(new Event("storage"))
 
-    // show popup
     setShowSuccess(true)
 
-    // redirect after delay
     setTimeout(() => {
-        window.location.href = "/profile"
-    }, 4000)
-    }
+      window.location.href = "/my-orders"
+    }, 3000)
+  }
+
 
     {showSuccess && (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
@@ -92,12 +178,58 @@ export default function CheckoutPage() {
         <form onSubmit={handlePlaceOrder} className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
 
+            {/* Saved Addresses Dropdown */}
+            {savedAddresses.length > 0 && (
+              <div className="mb-5">
+                <label className="mb-2 block text-sm font-medium">
+                  <h2 className="text-xl font-medium">  Choose saved address</h2>  
+                </label>
+
+                <select
+                  value={selectedAddressId}
+                  onChange={(e) => {
+                    const address = savedAddresses.find(
+                      (item) => item.id === e.target.value
+                    )
+
+                    if (!address) return
+
+                    setSelectedAddressId(address.id)
+                    setShippingInfo({
+                      firstName: address.firstName,
+                      lastName: address.lastName,
+                      street: address.street,
+                      apartment: address.apartment || "",
+                      city: address.city,
+                      state: address.state,
+                      zip: address.zip,
+                    })
+                  }}
+                  className="w-full rounded-md border bg-white px-3 py-4 text-sm"
+                >
+                  {savedAddresses.map((address) => (
+                    <option key={address.id} value={address.id}>
+                      {address.label} — {address.street}, {address.city}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+        
             {/* SHIPPING FORM */}
             <div className="border rounded-lg bg-card p-6">
               <div className="flex items-center gap-2 mb-5">
                 <Truck className="h-5 w-5" />
-                <h2 className="text-xl font-medium">Shipping Information</h2>
-              </div>
+                <h2 className="text-xl font-medium">Shipping Information</h2>     
+            </div>
+
+            <Link
+              href="/profile/addresses"
+              className="mb-5 inline-block text-sm underline underline-offset-4"
+            >
+              Add new shipping address
+            </Link>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <Input
@@ -172,6 +304,26 @@ export default function CheckoutPage() {
                 <CreditCard className="h-5 w-5" />
                 <h2 className="text-xl font-medium">Payment Method</h2>
               </div>
+              
+                  {savedPayment && (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("saved-card")}
+                      className={`mb-4 w-full border rounded-md p-4 text-left transition ${
+                        paymentMethod === "saved-card"
+                          ? "bg-foreground text-background"
+                          : "hover:bg-muted"
+                      }`}
+                    >
+                      <p className="font-medium">
+                        Use saved card ending in **** {savedPayment.last4}
+                      </p>
+                      <p className="text-sm opacity-80">
+                        {savedPayment.cardholderName} • Expires {savedPayment.expiration}
+                      </p>
+                    </button>
+                  )}
+
 
               <div className="grid sm:grid-cols-5 gap-3 mb-6">
                 {[
@@ -198,7 +350,12 @@ export default function CheckoutPage() {
 
               {paymentMethod === "credit-card" ? (
                 <div className="space-y-4">
-                  <Input placeholder="Card Number" required />
+                 <Input
+                  placeholder="Card Number"
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(e.target.value)}
+                  required
+                />
                   <div className="grid grid-cols-2 gap-4">
                     <Input placeholder="MM/YY" required />
                     <Input placeholder="CVV" required />
@@ -207,7 +364,7 @@ export default function CheckoutPage() {
                 </div>
               ) : (
                 <div className="rounded-md border p-4 text-sm text-muted-foreground">
-                  You selected {paymentMethod}. You will continue with this payment provider after placing the order.
+                  You selected {paymentMethod}.
                 </div>
               )}
             </div>
@@ -310,22 +467,18 @@ export default function CheckoutPage() {
 
         {showSuccess && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                
-                <div className="bg-background rounded-lg p-6 shadow-xl text-center w-80 animate-in fade-in zoom-in">
-                
+                <div className="bg-background rounded-lg p-6 shadow-xl text-center w-80 animate-in fade-in zoom-in">      
                 <h2 className="text-lg font-semibold mb-2">
                     Order Placed
                 </h2>
-
                 <p className="text-sm text-muted-foreground">
                     Your order has been placed successfully.
+                    <br />
+                    You will receive an email confirmation shortly.
                 </p>
-
                 </div>
             </div>
         )}
-
-
     </div>
   )
 }

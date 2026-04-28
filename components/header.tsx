@@ -123,27 +123,51 @@ export function Header() {
 
   
 
-
   return (
     
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
 
       {/* Top Header - Logo Centered */}
-      <div className="flex justify-center items-center py-2">
-        <Link href="/">
+      <div className="mx-auto max-w-7xl flex justify-center items-center py-2 px-6 lg:px-8">
+        <Link href="/" className="flex items-center gap-10">
+          
+          {/* Left Image */}
           <Image
-            src="/images/logo.png"
-            alt="The Petite Atelier"
+            src="/images/left_7.png"
             width={150}
             height={90}
-            className="h-20 lg:h-24 w-auto"
+            alt={"left-leaf"}
+            className="h-10 lg:h-15 w-auto"
+            priority
+          />
+
+          {/* Title */}
+          <Image
+            src="/images/logo_4.png"
+            width={200}
+            height={100}
+            alt={"central-logo"}
+            className="h-18 lg:h-23 w-auto"
+            priority
+          />
+
+
+
+          {/* Right Image */}
+          <Image
+            src="/images/right_7.png"
+            width={150}
+            height={90}
+            alt={"right-leaf"}
+            className="h-10 lg:h-15 w-auto"
             priority
           />
         </Link>
       </div>
 
+
       {/* Bottom Navbar */}
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2 lg:px-8 border-t border-border">
+      <nav className="mx-auto flex max-w-8xl items-center justify-between px-6 py-2 lg:px-8 border-t border-border">
 
         {/* Mobile menu */}
         <div className="flex lg:hidden">
@@ -239,7 +263,7 @@ export function Header() {
           <div className="relative">
             <input
               type="text"
-              placeholder="Search products, alterations..."
+              placeholder="Search products"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-72 rounded-full border border-border bg-background px-10 py-2 text-sm shadow-sm

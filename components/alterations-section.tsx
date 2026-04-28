@@ -38,7 +38,7 @@ export function AlterationsSection() {
 
           {/* Image */}
           <div className="relative">
-            <div className="aspect-[5/4] overflow-hidden rounded-lg bg-muted">
+            <div className="relative aspect-[5/4] overflow-hidden rounded-lg bg-muted">
               <Image
                 src="/images/alteration-service.jpg"
                 alt="Professional tailor working on garment alterations"

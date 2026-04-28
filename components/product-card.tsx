@@ -158,23 +158,23 @@ export function ProductCard({ product, showFavorite = true, showDetails = true, 
       }}
     >
     <div
-      className="bg-background rounded-lg p-4 shadow-lg w-56"
+      className="bg-background rounded-md p-2.5 shadow-lg w-40"
       onClick={(e) => {
         e.preventDefault()
         e.stopPropagation()
       }}
     >
-      <h4 className="text-sm font-medium mb-3 text-center">
+      <h4 className="text-xs font-medium mb-0 text-center">
         Select Size
       </h4>
 
        {/* POPUP size*/}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-1">
         {product.size?.map((size) => (
           <button
             key={size}
             onClick={() => setSelectedSize(size)}
-            className={`border rounded-md py-2 text-sm transition ${
+            className={`border rounded-sm py-1 text-xs transition ${
               selectedSize === size
               ? "bg-foreground text-background"
               : "hover:bg-foreground hover:text-background"
@@ -188,16 +188,16 @@ export function ProductCard({ product, showFavorite = true, showDetails = true, 
       {/* POPUP length*/}
       {product.length && product.length.length > 1 && (
       <>
-        <h4 className="text-sm font-medium mb-3 text-center">
+        <h4 className="text-xs font-medium mt-2 mb-0 text-center">
           Select Length
         </h4>
 
-        <div className="space-y-2 mb-4">
+        <div className="space-y-1 mb-1">
           {product.length.map((length) => (
             <button
               key={length}
               onClick={() => addToCartWithSizeAndLength(length)}
-              className={`w-full border rounded-md py-2 text-sm transition ${
+              className={`w-full border rounded-sm py-1 text-xs transition ${
                 selectedLength === length
                   ? "bg-foreground text-background"
                   : "hover:bg-foreground hover:text-background"
@@ -222,7 +222,7 @@ export function ProductCard({ product, showFavorite = true, showDetails = true, 
 
       <button
         onClick={() => setShowSizePopup(false)}
-        className="mt-3 w-full text-sm text-muted-foreground hover:underline"
+        className="w-full text-sm text-muted-foreground hover:underline"
       >
         Cancel
       </button>

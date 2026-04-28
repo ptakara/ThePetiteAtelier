@@ -7,6 +7,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { Heart, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { allProducts } from "@/lib/products"
+import { ProductCard } from "@/components/product-card"
 
 type Product = {
   id: number
@@ -47,6 +49,18 @@ export default function FavoritesPage() {
     setSelectedSize("")
     setShowSizePopup(true)
   }
+
+  {/* Recommendations logic*/}
+  const favoriteSubcategories = favorites.map((item) => item.subcategory)
+  const favoriteIds = favorites.map((item) => item.id)
+
+  const recommendedProducts = allProducts
+    .filter((product) => favoriteSubcategories.includes(product.subcategory))
+    .filter((product) => !favoriteIds.includes(product.id))
+    .slice(0, 8)
+
+
+
 
   const moveToBagWithSizeAndLength = (selectedLength: string) => {
     if (!selectedProduct || !selectedSize) return
@@ -120,7 +134,7 @@ export default function FavoritesPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-5">
           {favorites.map((product) => (
             <div key={product.id} className="group relative">
               <Link
@@ -132,8 +146,8 @@ export default function FavoritesPage() {
                   <Image
                     src={product.image}
                     alt={product.name}
-                    width={400}
-                    height={400}
+                    width={200}
+                    height={200}
                     className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
@@ -253,8 +267,6 @@ export default function FavoritesPage() {
                 </button>
             )}
 
-
-
             <button
               onClick={() => {
                 setSelectedProduct(null)
@@ -269,6 +281,34 @@ export default function FavoritesPage() {
       )}
 
 
+      {/* Recommendations Card*/}
+      {recommendedProducts.length > 0 && (
+        <div className="mt-15">
+          <h2 className="text-2xl font-semibold">
+            Recommended For You
+          </h2>
+
+          <p className="mt-2 text-sm text-muted-foreground">
+            Based on items you saved.
+          </p>
+
+          <div className="mt-5 flex gap-5 overflow-x-auto overflow-y-hidden pb-4">
+            {recommendedProducts.map((product) => (
+              <div
+                key={product.id}
+                className="w-[150px] min-w-[150px] max-w-[150px] sm:w-[170px] sm:min-w-[170px] sm:max-w-[170px] lg:w-[180px] lg:min-w-[180px] lg:max-w-[180px] flex-shrink-0"
+              >
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
+
+
+
+
+
   )
 }

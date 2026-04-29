@@ -10,7 +10,6 @@ import { LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { allProducts } from "@/lib/products"
 import { ProductCard } from "@/components/product-card"
-import Image from "next/image"
 
 
 type Appointment = {
@@ -54,6 +53,14 @@ type Order = {
   subtotal: number
 }
 
+type SavedPayment = {
+  nickname: string
+  type: "credit-card"
+  cardholderName: string
+  last4: string
+  expiration: string
+}
+
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("My Orders")
@@ -61,16 +68,19 @@ export default function ProfilePage() {
   const [avatar, setAvatar] = useState<string | null>(null)
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
-  const [street, setStreet] = useState("")
-  const [apartment, setApartment] = useState("")
-  const [city, setCity] = useState("")
-  const [state, setState] = useState("")
-  const [zip, setZip] = useState("")
-  const [country, setCountry] = useState("")
-
-
+  const [email, setEmail] = useState("")
+  const [birthdayMonth, setBirthdayMonth] = useState("")
+  const [birthdayDay, setBirthdayDay] = useState("")
+  const [mobileNumber, setMobileNumber] = useState("")
   const [appointments, setAppointments] = useState<Appointment[]>([])
-  
+  const [showPasswordPopup, setShowPasswordPopup] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [atelierEmails, setAtelierEmails] = useState(true)
+  const [atelierTexts, setAtelierTexts] = useState(true)
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+
   const getExpert = (zipcode: string, name: string) => {
     const experts = expertsByZip[zipcode] || []
     return experts.find((e) => e.name === name)
@@ -85,53 +95,56 @@ export default function ProfilePage() {
 
   const alterationAppointments = appointments
   const isOrders = activeTab === "My Orders"
+  const [savedPayment, setSavedPayment] = useState<SavedPayment[]>([])
 
+
+  // Effect//
   // Load saved data safely
   useEffect(() => {
     const savedAvatar = localStorage.getItem("avatar")
     const savedFirstName = localStorage.getItem("firstName")
     const savedLastName = localStorage.getItem("lastName")
-    const savedStreet = localStorage.getItem("street")
-    const savedApartment = localStorage.getItem("apartment")
-    const savedCity = localStorage.getItem("city")
-    const savedState = localStorage.getItem("state")
-    const savedZip = localStorage.getItem("zip")
-    const savedCountry = localStorage.getItem("country")
+    if (savedAvatar) setAvatar(savedAvatar)
+    if (savedFirstName) setFirstName(savedFirstName)
+    if (savedLastName) setLastName(savedLastName)
+  
+    const savedEmail = localStorage.getItem("userEmail")
+      if (savedEmail) setEmail(savedEmail)
+    
+    const savedBirthdayMonth = localStorage.getItem("birthdayMonth")
+    const savedBirthdayDay = localStorage.getItem("birthdayDay")
+    const savedMobileNumber = localStorage.getItem("mobileNumber")
+    if (savedBirthdayMonth) setBirthdayMonth(savedBirthdayMonth)
+    if (savedBirthdayDay) setBirthdayDay(savedBirthdayDay)
+    if (savedMobileNumber) setMobileNumber(savedMobileNumber)
+
     const savedFavorites = JSON.parse(localStorage.getItem("favorites") || "[]")
     setFavorites(savedFavorites)
     const savedOrders = JSON.parse(localStorage.getItem("orders") || "[]")
     setOrders(savedOrders)
-
-    if (savedAvatar) setAvatar(savedAvatar)
-    if (savedFirstName) setFirstName(savedFirstName)
-    if (savedLastName) setLastName(savedLastName)
-    if (savedStreet) setStreet(savedStreet)
-    if (savedApartment) setApartment(savedApartment)
-    if (savedCity) setCity(savedCity)
-    if (savedState) setState(savedState)
-    if (savedZip) setZip(savedZip)
   
+
     const storedAppointments = JSON.parse(
       localStorage.getItem("appointments") || "[]"
     )
     setAppointments(storedAppointments)
+
+  const storedPayments = localStorage.getItem("savedPayments")
+  if (storedPayments) {
+    setSavedPayment(JSON.parse(storedPayments))
+  }
+
   }, [])
 
 
     const [favorites, setFavorites] = useState<FavoriteProduct[]>([])
     const [orders, setOrders] = useState<Order[]>([])
-
     const router = useRouter()
-
-
     const purchasedItems = orders.flatMap((order) => order.items)
-
     const favoriteSubcategories = favorites.map((item) => item.subcategory)
     const purchasedSubcategories = purchasedItems.map((item) => item.subcategory)
-
     const favoriteIds = favorites.map((item) => item.id)
     const purchasedIds = purchasedItems.map((item) => item.id)
-
     const userSubcategories = [...favoriteSubcategories, ...purchasedSubcategories]
 
     const recommendedProducts = allProducts
@@ -152,30 +165,60 @@ export default function ProfilePage() {
       setAvatar(base64)
       localStorage.setItem("avatar", base64)
     }
-
     reader.readAsDataURL(file)
   }
 
+
+  {/* Render Tab Content */}
   const renderTabContent = () => {
     switch (activeTab) {
       case "Payment Method":
         return (
-          <div className="border rounded-md p-6 bg-card">
-            <h3 className="font-medium text-foreground mb-2">
-              Payment Method
-            </h3>
+        <div className="border rounded-md p-6 bg-card">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-medium text-foreground">
+                Payment Method
+              </h3>
 
-            <p className="text-sm text-muted-foreground mb-4">
-              Manage your saved payment method for faster checkout.
-            </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Manage your saved payment methods for faster checkout here:  < a href="/payment-method " className="underline text-sm" > Manage Payments</a>
+              </p>
+            </div>
 
-            <Button asChild>
-              <Link href="/payment-method">
-                Manage Payment Method
-              </Link>
-            </Button>
           </div>
-        )
+{savedPayment.length === 0 ? (
+  <p className="text-sm text-muted-foreground">
+    No saved cards yet.
+  </p>
+) : (
+  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    {savedPayment.map((card, index) => (
+      <div
+        key={index}
+        className="rounded-md border bg-background p-4"
+      >
+        <p className="font-medium">
+          {card.nickname}
+        </p>
+
+        <p className="mt-1 text-sm text-muted-foreground">
+          Card ending in **** {card.last4}
+        </p>
+
+        <p className="text-sm text-muted-foreground">
+          {card.cardholderName}
+        </p>
+
+        <p className="text-xs text-muted-foreground">
+          Expires {card.expiration}
+        </p>
+      </div>
+    ))}
+  </div>
+)}
+        </div>
+      )
       case "My Alteration Services":
         return (
           <div className="space-y-4">
@@ -195,7 +238,6 @@ export default function ProfilePage() {
             ) : (
              alterationAppointments.map((appt) => {
               const expert = getExpert(appt.zipcode, appt.expert)
-
               return (
                 <div
                   key={appt.id}
@@ -223,7 +265,80 @@ export default function ProfilePage() {
           </div>
         )
       case "Return":
-        return <Card title="Return Info" full showEdit={false} />
+        return <Card title="Return Info" full showEdit={false} />      
+      case "Account Settings":
+        return (
+          <div className="space-y-4">
+            {/* Password Card */}
+            <div className="border rounded-md p-6 bg-card">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-foreground">Password</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    ********
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setShowPasswordPopup(true)}
+                  className="text-sm underline text-muted-foreground hover:text-foreground"
+                >
+                  Edit
+                </button>
+              </div>
+            </div>
+
+
+            {/* Communication Preferences Card */}
+            <div className="border rounded-md p-6 bg-card">
+              <h3 className="font-medium text-foreground mb-4">
+                Communication Preferences
+              </h3>
+
+              <div className="space-y-4">
+               <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm">The Petite Atelier Emails</p>
+                  <p className="text-xs text-muted-foreground">
+                    Receive offers and alerts by email
+                  </p>
+                </div>
+
+                  <button
+                    onClick={() => setAtelierEmails(!atelierEmails)}
+                    className={`px-4 py-1 rounded-full text-sm ${
+                      atelierEmails
+                        ? "bg-accent text-background"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {atelierEmails ? "On" : "Off"}
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm">The Petite Atelier Texts</p>
+                    <p className="text-xs text-muted-foreground">
+                      Receive offers and alerts by text
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => setAtelierTexts(!atelierTexts)}
+                    className={`px-4 py-1 rounded-full text-sm ${
+                      atelierTexts
+                        ? "bg-accent text-background"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {atelierTexts ? "On" : "Off"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
       default:
         return null
     }
@@ -232,17 +347,14 @@ export default function ProfilePage() {
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn")
     localStorage.removeItem("userEmail")
-
     router.push("/login")
   }
 
   {/* Rewards */}
   const totalSpent = orders.reduce((total, order) => total + order.subtotal, 0)
-
   const rewardPoints = Math.floor(totalSpent / 150) * 10
   const amountUntilNextReward = 150 - (totalSpent % 150)
   const progressToNextReward = ((totalSpent % 150) / 150) * 100
-
   const rewardValue =
     rewardPoints >= 150
       ? "$100 off"
@@ -286,6 +398,7 @@ export default function ProfilePage() {
             />
           </div>
 
+
           {/* USER INFO */}
           <div>
             <div className="flex items-center gap-6">
@@ -310,7 +423,6 @@ export default function ProfilePage() {
               </button>
             </div>
 
-
             <span className="inline-block mt-2 px-2 py-1 text-xs rounded-full bg-accent text-background">
               Silver Member
             </span>
@@ -319,26 +431,28 @@ export default function ProfilePage() {
 
             {/* Name + Edit Profile (same line) */}
             <div className="flex items-center gap-20">
-              <p className="text-foreground font-medium">
-                {firstName || "First"} {lastName || "Last"}
+              <p className="text-foreground">
+                Name: {firstName || "First"} {lastName || "Last"}
               </p>
-
             </div>
 
-            {/* Address */}
+            {/* Birthday */}
             <p>
-              {street || "Street Address"}
-              {apartment ? `, ${apartment}` : ""}
+              {birthdayMonth && birthdayDay
+                ? `Birthday: ${birthdayMonth} ${birthdayDay}`
+                : "Birthday"}
+            </p>
+            
+            {/* Mobile Number */}
+            <p>
+              Mobile Number: {mobileNumber || "Mobile Number"}
             </p>
 
+            {/* Email */}
             <p>
-              {city || "City"}
-              {state ? `, ${state}` : ""}
-              {zip ? ` ${zip}` : ""}
+              Email: {email}
             </p>
-
           </div>
-
         </div>
       </div>
 
@@ -390,6 +504,7 @@ export default function ProfilePage() {
             "Payment Method",
             "My Alteration Services",
             "Returns",
+            "Account Settings",
           ].map((tab) => (
             <button
               key={tab}
@@ -405,6 +520,7 @@ export default function ProfilePage() {
             </button>
           ))}
         </div>
+
 
         {/* CONTENT */}
         {isOrders ? (
@@ -542,10 +658,107 @@ export default function ProfilePage() {
         ) : (
         renderTabContent()
       )}
-      </div>
+
+
+      {/*Update Password popup */}
+      {showPasswordPopup && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="w-full max-w-md border rounded-md bg-card p-6">
+            <h3 className="text-lg font-semibold mb-4">
+              Edit Password
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-muted-foreground">
+                  Current Password
+                </label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="mt-1 w-full border rounded-md px-3 py-2 bg-background"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-muted-foreground">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="mt-1 w-full border rounded-md px-3 py-2 bg-background"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-muted-foreground">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="mt-1 w-full border rounded-md px-3 py-2 bg-background"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setShowPasswordPopup(false)}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                onClick={() => {
+                  if (newPassword !== confirmPassword) {
+                    alert("New password and confirm password do not match.")
+                    return
+                  }
+
+                  localStorage.setItem("userPassword", newPassword)
+                  setShowPasswordPopup(false)
+                  setCurrentPassword("")
+                  setNewPassword("")
+                  setConfirmPassword("")
+                  setShowSuccessPopup(true)          }}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/*Saved new password popup */}
+      {showSuccessPopup && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="w-full max-w-sm border rounded-md bg-card p-6 text-center">
+            <h3 className="text-lg font-semibold mb-3">
+              Success
+            </h3>
+
+            <p className="text-sm text-muted-foreground mb-5">
+              Your password has been updated successfully.
+            </p>
+
+            <Button onClick={() => setShowSuccessPopup(false)}>
+              OK
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
-  )
+  </div>
+)
 }
+
 
 /* CARD COMPONENT */
 function Card({

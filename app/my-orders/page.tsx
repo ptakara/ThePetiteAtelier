@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronDown, ChevronUp, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
 
 type OrderItem = {
   id: number
@@ -34,6 +35,7 @@ export default function MyOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [openOrder, setOpenOrder] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
+  const router = useRouter()
 
   useEffect(() => {
     const savedOrders = JSON.parse(localStorage.getItem("orders") || "[]")
@@ -51,24 +53,36 @@ export default function MyOrdersPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-8">
         <div>
-          <h1 className="text-3xl font-semibold">My Orders</h1>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-semibold">My Orders</h1>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/profile")}
+            >
+              Go Back 
+            </Button>
+          </div>
+
           <p className="mt-2 text-sm text-muted-foreground">
             View your previous purchases and order details.
           </p>
-        </div>
 
-        <select
-          value={sortOrder}
-          onChange={(e) =>
-            setSortOrder(e.target.value as "newest" | "oldest")
-          }
-          className="rounded-md border bg-background px-3 py-2 text-sm"
-        >
-          <option value="newest">Newest to Oldest</option>
-          <option value="oldest">Oldest to Newest</option>
-        </select>
+          <div className="mt-7">
+            <select
+              value={sortOrder}
+              onChange={(e) =>
+                setSortOrder(e.target.value as "newest" | "oldest")
+              }
+              className="rounded-md border bg-background px-3 py-2 text-sm"
+            >
+              <option value="newest">Newest to Oldest</option>
+              <option value="oldest">Oldest to Newest</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {sortedOrders.length === 0 ? (
@@ -86,7 +100,7 @@ export default function MyOrdersPage() {
           </Button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 mt-14">
           {sortedOrders.map((order) => {
             const isOpen = openOrder === order.orderNumber
 
@@ -206,14 +220,14 @@ export default function MyOrdersPage() {
                         <div className="rounded-md border p-4">
                           <h4 className="font-medium">Payment</h4>
 
-                          <p className="font-medium">
-                            {order.paymentMethod?.cardNickname || "Saved Card"}
-                          </p>
+                         <p className="font-medium">
+                          Saved Card
+                        </p>
 
-                          <p className="text-sm text-muted-foreground">
-                            Card ending in {order.paymentMethod?.last4 || "0000"}
-                          </p>
-                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Card ending in {order.paymentLast4 || "0000"}
+                        </p>
+                                                </div>
                       </div>
 
                       {/* RIGHT: Order Totals */}

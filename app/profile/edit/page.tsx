@@ -10,23 +10,16 @@ export default function EditProfilePage() {
 
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
-  const [street, setStreet] = useState("")
-  const [apartment, setApartment] = useState("")
-  const [city, setCity] = useState("")
-  const [state, setState] = useState("")
-  const [zip, setZip] = useState("")
-  const [country, setCountry] = useState("")
+  const [birthdayMonth, setBirthdayMonth] = useState("")
+  const [birthdayDay, setBirthdayDay] = useState("")
+  const [mobileNumber, setMobileNumber] = useState("")
 
-  // Load saved data
   useEffect(() => {
     setFirstName(localStorage.getItem("firstName") || "")
     setLastName(localStorage.getItem("lastName") || "")
-    setStreet(localStorage.getItem("street") || "")
-    setApartment(localStorage.getItem("apartment") || "")
-    setCity(localStorage.getItem("city") || "")
-    setState(localStorage.getItem("state") || "")
-    setZip(localStorage.getItem("zip") || "")
-    setCountry(localStorage.getItem("country") || "")
+    setBirthdayMonth(localStorage.getItem("birthdayMonth") || "")
+    setBirthdayDay(localStorage.getItem("birthdayDay") || "")
+    setMobileNumber(localStorage.getItem("mobileNumber") || "")
   }, [])
 
   const handleSave = (e: React.FormEvent) => {
@@ -34,12 +27,9 @@ export default function EditProfilePage() {
 
     localStorage.setItem("firstName", firstName)
     localStorage.setItem("lastName", lastName)
-    localStorage.setItem("street", street)
-    localStorage.setItem("apartment", apartment)
-    localStorage.setItem("city", city)
-    localStorage.setItem("state", state)
-    localStorage.setItem("zip", zip)
-    localStorage.setItem("country", country)
+    localStorage.setItem("birthdayMonth", birthdayMonth)
+    localStorage.setItem("birthdayDay", birthdayDay)
+    localStorage.setItem("mobileNumber", mobileNumber)
 
     router.push("/profile")
   }
@@ -52,7 +42,6 @@ export default function EditProfilePage() {
         </h1>
 
         <form onSubmit={handleSave} className="space-y-4">
-
           <div>
             <label className="text-sm text-muted-foreground">
               First Name
@@ -79,90 +68,60 @@ export default function EditProfilePage() {
             />
           </div>
 
-          {/* STREET */}
-          <div>
-            <label className="text-sm text-muted-foreground">
-              Street Address
-            </label>
-            <Input
-              value={street}
-              onChange={(e) => setStreet(e.target.value)}
-              placeholder=""
-              className="mt-1"
-              required
-            />
-          </div>
-
-          {/* APARTMENT */}
-          <div>
-            <label className="text-sm text-muted-foreground">
-              Apartment / Suite (optional)
-            </label>
-            <Input
-              value={apartment}
-              onChange={(e) => setApartment(e.target.value)}
-              placeholder="optional"
-              className="mt-1"
-            />
-          </div>
-
-          {/* CITY + STATE */}
           <div className="flex gap-3">
             <div className="flex-1">
               <label className="text-sm text-muted-foreground">
-                City
+                Birthday Month
               </label>
-              <Input
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder=""
-                className="mt-1"
-                required
-              />
+         <select
+            value={birthdayMonth}
+            onChange={(e) => setBirthdayMonth(e.target.value)}
+            className="mt-1 w-full border rounded-md px-3 py-2 bg-background"
+            required
+          >
+            <option value="">Select Month</option>
+            <option value="January">January</option>
+            <option value="February">February</option>
+            <option value="March">March</option>
+            <option value="April">April</option>
+            <option value="May">May</option>
+            <option value="June">June</option>
+            <option value="July">July</option>
+            <option value="August">August</option>
+            <option value="September">September</option>
+            <option value="October">October</option>
+            <option value="November">November</option>
+            <option value="December">December</option>
+          </select>
             </div>
 
-            <div className="w-24">
+            <div className="flex-1">
               <label className="text-sm text-muted-foreground">
-                State
+                Birthday Day
               </label>
               <Input
-                value={state}
-                onChange={(e) => setState(e.target.value)}
-                placeholder=""
+                value={birthdayDay}
+                onChange={(e) => setBirthdayDay(e.target.value)}
+                placeholder="DD"
                 className="mt-1"
                 required
               />
             </div>
           </div>
 
-          {/* ZIP */}
           <div>
             <label className="text-sm text-muted-foreground">
-              ZIP Code
+              Mobile Number
             </label>
             <Input
-              value={zip}
-              onChange={(e) => setZip(e.target.value)}
-              placeholder=""
+              type="tel"
+              value={mobileNumber}
+              onChange={(e) => setMobileNumber(e.target.value)}
+              placeholder="(123) 456-7890"
               className="mt-1"
               required
             />
           </div>
-
-          {/* COUNTRY */}
-          <div>
-            <label className="text-sm text-muted-foreground">  
-              Country
-            </label>
-            <Input
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              placeholder=""
-              className="mt-1"
-              required
-            />
-          </div>
-
 
           <Button type="submit" className="w-full">
             Save Changes

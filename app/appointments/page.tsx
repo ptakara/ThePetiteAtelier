@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { expertsByZip } from "@/lib/experts"
 import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
 
 
 type Appointment = {
@@ -20,6 +22,7 @@ type Appointment = {
 }
 
 export default function AppointmentsPage() {
+  const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
 
   useEffect(() => {
@@ -61,7 +64,16 @@ const cancelAppointment = (id: string) => {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
-      <h1 className="text-2xl font-semibold mb-6">My Appointments</h1>
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-2xl font-semibold mb-6">My Appointments</h1>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/profile")}
+          >
+            Go Back 
+          </Button>
+     </div>
 
       {appointments.length === 0 ? (
         <p className="text-muted-foreground">
@@ -70,12 +82,10 @@ const cancelAppointment = (id: string) => {
       ) : (
         <div className="space-y-4">
 
-
           {appointments.map((appt) => {
             const expert = getExpert(appt.zipcode, appt.expert)
 
             
-
             return (
               <div
                 key={appt.id}
@@ -107,9 +117,6 @@ const cancelAppointment = (id: string) => {
               </div>
             )
           })}
-
-
-
 
         </div>
       )}

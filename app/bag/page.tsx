@@ -135,18 +135,24 @@ export default function BagIt() {
                 key={`${item.id}-${item.selectedSize}-${index}`}
                 className="border rounded-lg bg-card p-4 flex gap-4"
               >
+                <Link href={`/shop/${item.category}/${item.id}`}>
                 <Image
                   src={item.image}
                   alt={item.name}
                   width={130}
                   height={130}
-                  className="w-32 h-32 object-cover rounded-md"
+                  className="w-32 h-32 object-cover rounded-md cursor-pointer"
                 />
+              </Link>
 
                 <div className="flex-1">
                   <div className="flex justify-between gap-4">
                     <div>
-                      <h2 className="font-medium">{item.name}</h2>
+                      <Link href={`/shop/${item.category}/${item.id}`}>
+                        <h2 className="font-medium hover:underline cursor-pointer">
+                          {item.name}
+                        </h2>
+                      </Link>
                       {/* size info */}
                       <p className="text-sm text-muted-foreground">
                         Size: {item.selectedSize}

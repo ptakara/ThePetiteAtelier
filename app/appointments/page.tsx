@@ -40,7 +40,7 @@ const getExpert = (zipcode: string, name: string) => {
 const cancelAppointment = (id: string) => {
   toast("Are you sure you want to cancel this appointment?", {
     action: {
-      label: "Cancel",
+      label: "  Yes ",
       onClick: () => {
         const stored = JSON.parse(localStorage.getItem("appointments") || "[]")
 

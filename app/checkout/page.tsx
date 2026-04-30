@@ -60,9 +60,9 @@ export default function CheckoutPage() {
     const storedCart = JSON.parse(localStorage.getItem("cart") || "[]")
     setCart(storedCart)
     
-    const storedPayment = localStorage.getItem("savedPayment")
-    if (storedPayment) {
-      setSavedPayment(JSON.parse(storedPayment))
+    const storedPayments = localStorage.getItem("savedPayments")
+    if (storedPayments) {
+      setSavedPayments(JSON.parse(storedPayments))
     }
 
     
@@ -101,7 +101,7 @@ export default function CheckoutPage() {
   const subtotal = merchandiseTotal - savings + shippingFee + tax
   const router = useRouter()
   const [cardNumber, setCardNumber] = useState("")
-  const [savedPayment, setSavedPayment] = useState<SavedPayment | null>(null)
+  const [savedPayments, setSavedPayments] = useState<SavedPayment[]>([])
 
 
 
@@ -305,24 +305,34 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-medium">Payment Method</h2>
               </div>
               
-                  {savedPayment && (
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod("saved-card")}
-                      className={`mb-4 w-full border rounded-md p-4 text-left transition ${
-                        paymentMethod === "saved-card"
-                          ? "bg-foreground text-background"
-                          : "hover:bg-muted"
-                      }`}
-                    >
-                      <p className="font-medium">
-                        Use saved card ending in **** {savedPayment.last4}
-                      </p>
-                      <p className="text-sm opacity-80">
-                        {savedPayment.cardholderName} • Expires {savedPayment.expiration}
-                      </p>
-                    </button>
-                  )}
+         {savedPayments.length > 0 && (
+            <div className="mb-4 space-y-3">
+              {savedPayments.map((card, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => {
+                    setPaymentMethod(`saved-card-${index}`)
+                    setCardNickname(card.cardholderName)
+                    setCardNumber(card.last4)
+                  }}
+                  className={`w-full border rounded-md p-4 text-left transition ${
+                    paymentMethod === `saved-card-${index}`
+                      ? "bg-foreground text-background"
+                      : "hover:bg-muted"
+                  }`}
+                >
+                  <p className="font-medium">
+                    Use saved card ending in **** {card.last4}
+                  </p>
+
+                  <p className="text-sm opacity-80">
+                    {card.cardholderName} • Expires {card.expiration}
+                  </p>
+                </button>
+              ))}
+            </div>
+          )}
 
 
               <div className="grid sm:grid-cols-5 gap-3 mb-6">

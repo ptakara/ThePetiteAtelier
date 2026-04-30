@@ -12,7 +12,7 @@ export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const redirect = searchParams.get("redirect") || "/profile"
+  const redirect = searchParams.get("redirect") || "/"
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -22,6 +22,7 @@ export default function LoginPage() {
   if (email === "user1@gmail.com" && password === "user123") {
     localStorage.setItem("isLoggedIn", "true")
     localStorage.setItem("userEmail", email)
+    window.dispatchEvent(new Event("authChanged"))
 
     router.push(redirect)
   }else {

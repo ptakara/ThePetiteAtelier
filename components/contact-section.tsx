@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, } from "react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
@@ -22,6 +22,11 @@ export function ContactSection() {
     // Handle form submission
     console.log("[v0] Form submitted:", formData)
   }
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" })
+  }, [])
+
 
   return (
     <section id="contact" className="py-10 lg:py-15">

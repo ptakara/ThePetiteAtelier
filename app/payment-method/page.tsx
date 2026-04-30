@@ -1,3 +1,4 @@
+//app/payment-method/page.tsx
 "use client"
 
 import { useEffect, useState } from "react"
@@ -12,6 +13,7 @@ type SavedPayment = {
   cardholderName: string
   last4: string
   expiration: string
+  brand: string
 }
 
 export default function PaymentMethodPage() {
@@ -54,11 +56,20 @@ export default function PaymentMethodPage() {
     return value.replace(/\D/g, "").slice(0, 3)
   }
 
+  {/*Detect Card Band */}
+  const getCardBrand = (number: string) => {
+    if (/^4/.test(number)) return "visa"
+    if (/^5[1-5]/.test(number)) return "master"
+    if (/^3[47]/.test(number)) return "amex"
+    return "card"
+  }
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault()
 
     const cleanCardNumber = cardNumber.replace(/\s/g, "")
     const last4 = cleanCardNumber.slice(-4)
+    const brand = getCardBrand(cleanCardNumber)
 
     const payment: SavedPayment = {
       nickname: cardNickname,
@@ -66,6 +77,7 @@ export default function PaymentMethodPage() {
       cardholderName,
       last4,
       expiration,
+      brand,
     }
 
     const updatedPayments = [...savedPayments, payment]
@@ -73,7 +85,9 @@ export default function PaymentMethodPage() {
     localStorage.setItem("savedPayments", JSON.stringify(updatedPayments))
     setSavedPayments(updatedPayments)
     setCardNickname("")
+    setCardholderName("")
     setCardNumber("")
+    setExpiration("")
     setCvv("")
   }
 
@@ -130,7 +144,7 @@ export default function PaymentMethodPage() {
             <Input
               value={cardholderName}
               onChange={(e) => setCardholderName(e.target.value)}
-              placeholder="Patricia Takara"
+              placeholder=""
               className="mt-1"
               required
             />
@@ -143,7 +157,7 @@ export default function PaymentMethodPage() {
               <Input
                 value={cardNumber}
                 onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                placeholder="1234 5678 9012 3456"
+                placeholder=""
                 className="mt-1"
                 required
               />
@@ -170,7 +184,7 @@ export default function PaymentMethodPage() {
                 <Input
                   value={cvv}
                   onChange={(e) => setCvv(formatCvv(e.target.value))}
-                  placeholder="123"
+                  placeholder=""
                   className="mt-1"
                   required
                 />
@@ -192,7 +206,14 @@ export default function PaymentMethodPage() {
                 {savedPayments.map((payment, index) => (
                   <div key={index} className="border rounded-lg bg-card p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <CreditCard className="h-5 w-5" />
+
+                      {/*Card icons*/}
+                      <img
+                        src={`/images/${payment.brand}.png`}
+                        alt={payment.brand}
+                        className="h-6 w-10 object-contain"
+                      />
+                      
                       <h2 className="font-medium">{payment.nickname || "Saved Card"}</h2>
                     </div>
 
@@ -222,23 +243,7 @@ export default function PaymentMethodPage() {
             )}
       </div>
 
-
-
-
-
-
-
     </div>
   )
 
-
-
-
-
-
-
-
-
-
-  
 }

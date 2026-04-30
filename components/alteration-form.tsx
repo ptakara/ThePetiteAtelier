@@ -56,15 +56,23 @@ export function AlterationForm() {
       JSON.stringify([...existing, newAppointment])
     )
 
-    toast.success("Appointment submitted successfully!", {
-      description: (
-        <div className="mt-2 flex gap-3">
-          <a href="/appointments" className="underline text-sm">
-            View My Appointments
-          </a>
-        </div>
-      ),
-    })
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true"
+
+    if (isLoggedIn) {
+      toast.success("Appointment submitted successfully!", {
+        description: (
+          <div className="mt-2 flex gap-3">
+            <a href="/appointments" className="underline text-sm">
+              View My Appointments
+            </a>
+          </div>
+        ),
+      })
+    } else {
+      toast.success("Check your email for appointment confirmation.", {
+        duration: 2000,
+      })
+    }
 
     setFormData({
       firstName: "",
@@ -292,15 +300,16 @@ export function AlterationForm() {
                   <FieldLabel className="text-sm font-medium text-foreground">
                     Preferred Date
                   </FieldLabel>
-                  <Input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) =>
-                      setFormData({ ...formData, date: e.target.value })
-                    }
-                    className="mt-2"
-                    required
-                  />
+                <Input
+                  type="date"
+                  min={new Date().toISOString().split("T")[0]}
+                  value={formData.date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, date: e.target.value })
+                  }
+                  className="mt-2"
+                  required
+                />
                 </Field>
               </FieldGroup>
 

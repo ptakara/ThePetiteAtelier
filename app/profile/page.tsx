@@ -40,6 +40,7 @@ type OrderItem = {
   selectedSize: string
   selectedLength?: string
   quantity?: number
+  returnSelected?: boolean
 }
 
 type Order = {
@@ -51,6 +52,13 @@ type Order = {
   shippingFee: number
   tax: number
   subtotal: number
+  status?: "Delivered" | "Return Requested" | "Returned" | "Refunded"
+  returnItems?: OrderItem[]
+  returnMethod?: "Print Label at Home" | "Digital QR Code"
+  refundMethod?: "Original Card" | "Website Credit"
+  returnDate?: string
+  returnDeadline?: string
+  estimatedRefund?: number
 }
 
 type SavedPayment = {
@@ -59,12 +67,14 @@ type SavedPayment = {
   cardholderName: string
   last4: string
   expiration: string
+  brand: string
 }
 
 
 export default function ProfilePage() {
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState("My Orders")
-
   const [avatar, setAvatar] = useState<string | null>(null)
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
@@ -101,6 +111,13 @@ export default function ProfilePage() {
   // Effect//
   // Load saved data safely
   useEffect(() => {
+  const isLoggedIn = localStorage.getItem("isLoggedIn")
+
+    if (isLoggedIn !== "true") {
+      router.push("/login?redirect=/profile")
+      return
+    }
+
     const savedAvatar = localStorage.getItem("avatar")
     const savedFirstName = localStorage.getItem("firstName")
     const savedLastName = localStorage.getItem("lastName")
@@ -134,12 +151,13 @@ export default function ProfilePage() {
     setSavedPayment(JSON.parse(storedPayments))
   }
 
+  setIsCheckingAuth(false)
+
   }, [])
 
 
     const [favorites, setFavorites] = useState<FavoriteProduct[]>([])
     const [orders, setOrders] = useState<Order[]>([])
-    const router = useRouter()
     const purchasedItems = orders.flatMap((order) => order.items)
     const favoriteSubcategories = favorites.map((item) => item.subcategory)
     const purchasedSubcategories = purchasedItems.map((item) => item.subcategory)
@@ -168,6 +186,15 @@ export default function ProfilePage() {
     reader.readAsDataURL(file)
   }
 
+  const returnOrders = orders.filter(
+    (order) =>
+      order.status === "Return Requested" ||
+      order.status === "Returned" ||
+      order.status === "Refunded"
+  )
+
+
+
 
   {/* Render Tab Content */}
   const renderTabContent = () => {
@@ -187,36 +214,43 @@ export default function ProfilePage() {
             </div>
 
           </div>
-{savedPayment.length === 0 ? (
-  <p className="text-sm text-muted-foreground">
-    No saved cards yet.
-  </p>
-) : (
-  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-    {savedPayment.map((card, index) => (
-      <div
-        key={index}
-        className="rounded-md border bg-background p-4"
-      >
-        <p className="font-medium">
-          {card.nickname}
-        </p>
+          {savedPayment.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No saved cards yet.
+            </p>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {savedPayment.map((card, index) => (
+                <div
+                  key={index}
+                  className="rounded-md border bg-background p-4"
+                >
+                  {/*creditcard icon */}
+                  <img
+                    src={`/images/${card.brand}.png`}
+                    alt={card.brand}
+                    className="h-6 w-10 object-contain"
+                  />
 
-        <p className="mt-1 text-sm text-muted-foreground">
-          Card ending in **** {card.last4}
-        </p>
+                  <p className="font-medium">
+                    {card.nickname}
+                  </p>
 
-        <p className="text-sm text-muted-foreground">
-          {card.cardholderName}
-        </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Card ending in **** {card.last4}
+                  </p>
 
-        <p className="text-xs text-muted-foreground">
-          Expires {card.expiration}
-        </p>
-      </div>
-    ))}
-  </div>
-)}
+                  <p className="text-sm text-muted-foreground">
+                    {card.cardholderName}
+                  </p>
+
+                  <p className="text-xs text-muted-foreground">
+                    Expires {card.expiration}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )
       case "My Alteration Services":
@@ -264,8 +298,142 @@ export default function ProfilePage() {
             )}
           </div>
         )
-      case "Return":
-        return <Card title="Return Info" full showEdit={false} />      
+      case "Returns":
+          const returnOrders = orders.filter(
+            (order) => order.status === "Return Requested"
+          )
+          const cancelReturnItem = (orderNumber: string, itemId: number) => {
+            const savedOrders = JSON.parse(localStorage.getItem("orders") || "[]")
+
+            const updatedOrders = savedOrders.map((order: any) => {
+              if (order.orderNumber !== orderNumber) return order
+
+              const updatedReturnItems = (order.returnItems || []).filter(
+                (item: any) => item.id !== itemId
+              )
+
+              return {
+                ...order,
+                returnItems: updatedReturnItems,
+                status: updatedReturnItems.length > 0 ? "Return Requested" : "Delivered",
+                estimatedRefund: updatedReturnItems.reduce(
+                  (total: number, item: any) =>
+                    total + item.price * (item.quantity || 1),
+                  0
+                ),
+                returnMethod: updatedReturnItems.length > 0 ? order.returnMethod : "",
+                refundMethod: updatedReturnItems.length > 0 ? order.refundMethod : "",
+                returnDate: updatedReturnItems.length > 0 ? order.returnDate : "",
+                returnDeadline: updatedReturnItems.length > 0 ? order.returnDeadline : "",
+              }
+            })
+
+            localStorage.setItem("orders", JSON.stringify(updatedOrders))
+            setOrders(updatedOrders)
+          }
+
+          return (
+            <div className="border rounded-md p-6 bg-card">
+              <h3 className="font-medium text-foreground mb-4">
+                Returns
+              </h3>
+
+              {returnOrders.length === 0 ? (
+                <div className="text-center py-10">
+                  <h4 className="text-lg font-medium mb-2">
+                    No returns yet
+                  </h4>
+
+                  <p className="text-sm text-muted-foreground">
+                    When you request a return, it will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {returnOrders.map((order) => (
+                    <div
+                      key={order.orderNumber}
+                      className="border rounded-md p-4 bg-background"
+                    >
+                      <div className="flex justify-between gap-4">
+                        <div>
+                          <p className="font-medium">
+                            Order #{order.orderNumber}
+                          </p>
+
+                          <p className="text-sm text-muted-foreground">
+                            Status: {order.status}
+                          </p>
+
+                          <p className="text-sm text-muted-foreground">
+                            Return method: {order.returnMethod}
+                          </p>
+
+                          <p className="text-sm text-muted-foreground">
+                            Refund method: {order.refundMethod}
+                          </p>
+
+                          {order.returnDeadline && (
+                            <p className="text-sm text-muted-foreground">
+                              Drop off by:{" "}
+                              {new Date(order.returnDeadline).toLocaleDateString()}
+                            </p>
+                          )}
+
+                          <p className="text-sm text-muted-foreground">
+                            Estimated refund: ${order.estimatedRefund?.toFixed(2)}
+                          </p>
+                        </div>
+
+                        <div className="mt-4 space-y-3">
+                          {order.returnItems?.map((item, index) => (
+                            <div
+                              key={`${item.id}-${index}`}
+                              className="flex items-center justify-between gap-4 rounded-md border p-3"
+                            >
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  className="w-14 h-14 rounded-md object-cover border bg-muted"
+                                />
+
+                                <div>
+                                  <p className="text-sm font-medium">{item.name}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Size: {item.selectedSize}
+                                  </p>
+
+                                  {item.selectedLength && (
+                                    <p className="text-xs text-muted-foreground">
+                                      Length: {item.selectedLength}
+                                    </p>
+                                  )}
+
+                                  <p className="text-xs text-muted-foreground">
+                                    Qty: {item.quantity || 1}
+                                  </p>
+                                </div>
+                              </div>
+                              <Button
+                                variant="outline"
+                                onClick={() => cancelReturnItem(order.orderNumber, item.id)}
+                              >
+                                Cancel Return
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+
+
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+                        
       case "Account Settings":
         return (
           <div className="space-y-4">
@@ -348,6 +516,7 @@ export default function ProfilePage() {
     localStorage.removeItem("isLoggedIn")
     localStorage.removeItem("userEmail")
     router.push("/login")
+    window.dispatchEvent(new Event("authChanged"))
   }
 
   {/* Rewards */}
@@ -364,6 +533,10 @@ export default function ProfilePage() {
       ? "$25 off"
       : "Keep shopping to unlock rewards"
 
+
+  if (isCheckingAuth) {
+    return null
+  }
 
 
   return (
@@ -551,10 +724,11 @@ export default function ProfilePage() {
                         new Date(b.date).getTime() - new Date(a.date).getTime()
                     )
                     .map((order) => (
-                      <div
-                        key={order.orderNumber}
-                        className="border rounded-md p-3 bg-background"
-                      >
+                 <Link
+  href={`/my-orders?order=${order.orderNumber}`}
+  key={order.orderNumber}
+  className="block border rounded-md p-3 bg-background hover:bg-muted/40 transition cursor-pointer"
+>
                         <div className="flex justify-between gap-4">
                           <div>
                             <p className="text-sm font-medium">
@@ -581,7 +755,9 @@ export default function ProfilePage() {
                             ))}
                           </div>
                         </div>
-                      </div>
+                      </Link>
+
+
                     ))}
                 </div>
               )}
@@ -633,24 +809,31 @@ export default function ProfilePage() {
               </p>
             ) : (
               <div className="space-y-3">
-                {favorites.map((item) => (
-                  <div key={item.id} className="flex items-center gap-4">
+              {favorites.map((item) => (
+                <div key={item.id} className="flex items-center gap-4">
+
+                  <Link href={`/shop/${item.category}/${item.id}`}>
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-16 h-16 object-cover rounded-md"
+                      className="w-16 h-16 object-cover rounded-md cursor-pointer"
                     />
+                  </Link>
 
-                    <div>
-                      <p className="text-sm text-foreground">
+                  <div>
+                    <Link href={`/shop/${item.category}/${item.id}`}>
+                      <p className="text-sm text-foreground hover:underline cursor-pointer">
                         {item.name}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        ${item.price}
-                      </p>
-                    </div>
+                    </Link>
+
+                    <p className="text-sm text-muted-foreground">
+                      ${item.price}
+                    </p>
                   </div>
-                ))}
+
+                </div>
+              ))}
               </div>
             )}
           </div>

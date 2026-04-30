@@ -1,3 +1,5 @@
+//components/product-card.tsx
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -116,7 +118,7 @@ export function ProductCard({ product, showFavorite = true, showDetails = true, 
 
 
   return (
-    <Link href={`/product/${encodeURIComponent(product.name.toLowerCase().replace(/\s+/g, "-"))}`}>
+   <Link href={`/shop/${product.category}/${product.id}`}>
       <div className="group relative">
 
     {/* Heart Icon (top right) */}

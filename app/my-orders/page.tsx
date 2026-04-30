@@ -1,11 +1,14 @@
+//app/my-orders/page.tsx
+
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronDown, ChevronUp, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 
 type OrderItem = {
   id: number
@@ -15,6 +18,7 @@ type OrderItem = {
   selectedSize: string
   selectedLength?: string
   quantity?: number
+  returnSelected?: boolean
 }
 
 type Order = {
@@ -28,6 +32,15 @@ type Order = {
   subtotal: number
   shippingAddress?: string
   paymentLast4?: string
+
+  status?: "Delivered" | "Return Requested" | "Returned" | "Refunded"
+  returnRequested?: boolean
+  returnDate?: string
+  returnItems?: OrderItem[]
+  returnMethod?: string
+  refundMethod?: string
+  returnDeadline?: string
+  estimatedRefund?: number
 }
 
 
@@ -36,11 +49,22 @@ export default function MyOrdersPage() {
   const [openOrder, setOpenOrder] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const orderFromURL = searchParams.get("order")
+  const openedOrderRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    const savedOrders = JSON.parse(localStorage.getItem("orders") || "[]")
-    setOrders(savedOrders)
-  }, [])
+    if (orderFromURL) {
+      setOpenOrder(orderFromURL)
+
+      setTimeout(() => {
+        openedOrderRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        })
+      }, 200)
+    }
+  }, [orderFromURL])
 
   const sortedOrders = [...orders].sort((a, b) => {
     const dateA = new Date(a.date).getTime()
@@ -50,6 +74,100 @@ export default function MyOrdersPage() {
       ? dateB - dateA
       : dateA - dateB
   })
+
+
+
+  {/*Return Window, if eligible*/}
+  const isReturnEligible = (orderDate: string) => {
+    const orderTime = new Date(orderDate).getTime()
+    const now = new Date().getTime()
+    const daysDiff = (now - orderTime) / (1000 * 60 * 60 * 24)
+    return daysDiff <= 30
+  }
+
+  const [showReturnPopup, setShowReturnPopup] = useState(false)
+  const [returnStep, setReturnStep] = useState(1)
+  const [selectedReturnOrder, setSelectedReturnOrder] = useState<Order | null>(null)
+  const [selectedReturnItems, setSelectedReturnItems] = useState<OrderItem[]>([])
+  const [returnMethod, setReturnMethod] = useState("")
+  const [refundMethod, setRefundMethod] = useState("")
+  const [showReturnSuccess, setShowReturnSuccess] = useState(false)
+
+
+
+  useEffect(() => {
+    const savedOrders = JSON.parse(localStorage.getItem("orders") || "[]")
+    const ordersWithStatus = savedOrders.map((order: any) => ({
+      ...order,
+      status: order.status || "Delivered",
+    }))
+    setOrders(ordersWithStatus)
+  }, [])
+
+
+
+  {/*Return helper function */}
+  const toggleReturnItem = (item: OrderItem) => {
+    const alreadySelected = selectedReturnItems.some(
+      (selectedItem) => selectedItem.id === item.id
+    )
+
+    if (alreadySelected) {
+      setSelectedReturnItems(
+        selectedReturnItems.filter((selectedItem) => selectedItem.id !== item.id)
+      )
+    } else {
+      setSelectedReturnItems([...selectedReturnItems, item])
+    }
+  }
+
+  {/*Submit Return function */}
+  const submitReturn = () => {
+    if (!selectedReturnOrder) return
+
+    const today = new Date()
+    const deadline = new Date()
+    deadline.setDate(today.getDate() + 10)
+
+    const estimatedRefund = selectedReturnItems.reduce(
+      (total, item) => total + item.price * (item.quantity || 1),
+      0
+    )
+
+    const updatedOrders = orders.map((order) => {
+      if (order.orderNumber !== selectedReturnOrder.orderNumber) {
+        return order
+      }
+
+      return {
+        ...order,
+        status: "Return Requested" as const,
+        returnItems: [
+          ...(order.returnItems || []),
+          ...selectedReturnItems,
+        ],
+        returnMethod,
+        refundMethod,
+        returnDate: today.toISOString(),
+        returnDeadline: deadline.toISOString(),
+        estimatedRefund,
+      }
+    })
+
+    setOrders(updatedOrders)
+    localStorage.setItem("orders", JSON.stringify(updatedOrders))
+
+    setShowReturnPopup(false)
+    setSelectedReturnOrder(null)
+    setSelectedReturnItems([])
+    setReturnMethod("")
+    setRefundMethod("")
+    setReturnStep(1)
+    setShowReturnSuccess(true)
+  }
+
+
+
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
@@ -107,7 +225,12 @@ export default function MyOrdersPage() {
             return (
               <div
                 key={order.orderNumber}
-                className="rounded-lg border bg-card"
+                ref={order.orderNumber === orderFromURL ? openedOrderRef : null}
+                className={`rounded-lg border bg-card ${
+                  order.orderNumber === orderFromURL
+                    ? "border-black bg-muted/40"
+                    : ""
+                }`}
               >
                 <button
                   onClick={() =>
@@ -132,6 +255,10 @@ export default function MyOrdersPage() {
                     <div>
                       <p className="font-medium">
                         Order #{order.orderNumber}
+                      </p>
+
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Status: {order.status || "Delivered"}
                       </p>
 
                       <p className="mt-1 text-sm text-muted-foreground">
@@ -206,8 +333,30 @@ export default function MyOrdersPage() {
                       ))}
                     </div>
 
+                    {/*Return Button*/}
                     <div className="mt-6 flex gap-6">
-                      
+                      {isReturnEligible(order.date) &&
+                        order.items.some(
+                          (item) =>
+                            !order.returnItems?.some(
+                              (returnItem) => returnItem.id === item.id
+                            )
+                        ) && (
+                      <Button
+                        onClick={() => {
+                          setSelectedReturnOrder(order)
+                          setSelectedReturnItems([])
+                          setReturnMethod("")
+                          setRefundMethod("")
+                          setReturnStep(1)
+                          setShowReturnPopup(true)
+                        }}
+                        className="mt-2"
+                      >
+                        Start Return
+                      </Button>
+                      )}
+
                       {/* LEFT: Shipping + Payment */}
                       <div className="w-full max-w-sm space-y-4">
                         <div className="rounded-md border p-4">
@@ -272,6 +421,275 @@ export default function MyOrdersPage() {
           })}
         </div>
       )}
-    </div>
+
+
+      {/* return pop up*/}
+      {showReturnPopup && selectedReturnOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-xl rounded-md border bg-card p-6 max-h-[90vh] overflow-y-auto">
+            
+            {returnStep === 1 && (
+              <>
+                <h2 className="text-lg font-semibold mb-4">
+                  Select items to return
+                </h2>
+
+                <div className="space-y-3">
+                  {selectedReturnOrder.items
+                    .filter(
+                      (item) =>
+                        !selectedReturnOrder.returnItems?.some(
+                          (returnItem) => returnItem.id === item.id
+                        )
+                    )
+                    .map((item, index) => {
+                    const isSelected = selectedReturnItems.some(
+                      (selectedItem) => selectedItem.id === item.id
+                    )
+
+                    return (
+                      <button
+                        key={`${item.id}-${index}`}
+                        onClick={() => toggleReturnItem(item)}
+                        className={`w-full flex items-center gap-4 rounded-md border p-3 text-left ${
+                          isSelected ? "border-accent bg-accent/10" : "bg-background"
+                        }`}
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="h-16 w-16 rounded-md object-cover"
+                        />
+
+                        <div>
+                          <p className="font-medium">{item.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Size: {item.selectedSize}
+                          </p>
+
+                          {item.selectedLength && (
+                            <p className="text-sm text-muted-foreground">
+                              Length: {item.selectedLength}
+                            </p>
+                          )}
+
+                          <p className="text-sm text-muted-foreground">
+                            Qty: {item.quantity || 1}
+                          </p>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <div className="mt-6 flex justify-end gap-3">
+                  <Button variant="outline" onClick={() => setShowReturnPopup(false)}>
+                    Cancel
+                  </Button>
+
+                  <Button
+                    disabled={selectedReturnItems.length === 0}
+                    onClick={() => setReturnStep(2)}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {returnStep === 2 && (
+              <>
+                <h2 className="text-lg font-semibold mb-4">
+                  How would you like to return it?
+                </h2>
+
+                <div className="space-y-3">
+                  <button
+                    onClick={() => setReturnMethod("Print Label at Home")}
+                    className={`w-full rounded-md border p-4 text-left ${
+                      returnMethod === "Print Label at Home"
+                        ? "border-accent bg-accent/10"
+                        : "bg-background"
+                    }`}
+                  >
+                    <p className="font-medium">Print label at home</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Schedule a free pickup, leave it in your mailbox, or take it to a shipping location of your choice.
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1"> (Label will be sent to your email)</p>
+                  </button>
+
+                  <button
+                    onClick={() => setReturnMethod("Digital QR Code")}
+                    className={`w-full rounded-md border p-4 text-left ${
+                      returnMethod === "Digital QR Code"
+                        ? "border-accent bg-accent/10"
+                        : "bg-background"
+                    }`}
+                  >
+                    <p className="font-medium">Get a digital QR code</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      No printer, no problem! You’ll get a return code that you can show at the carrier&apos;s location and they’ll print a label for you. 
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1"> (QR code will be sent to your email)</p>
+                  </button>
+                </div>
+
+                <div className="mt-6 flex justify-between">
+                  <Button variant="outline" onClick={() => setReturnStep(1)}>
+                    Back
+                  </Button>
+
+                  <Button
+                    disabled={!returnMethod}
+                    onClick={() => setReturnStep(3)}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {returnStep === 3 && (
+              <>
+                <h2 className="text-lg font-semibold mb-4">
+                  Choose refund method
+                </h2>
+
+                <div className="space-y-3">
+                  <button
+                    onClick={() => setRefundMethod("Original Card")}
+                    className={`w-full rounded-md border p-4 text-left ${
+                      refundMethod === "Original Card"
+                        ? "border-accent bg-accent/10"
+                        : "bg-background"
+                    }`}
+                  >
+                    Return refund to original card
+                  </button>
+
+                  <button
+                    onClick={() => setRefundMethod("Website Credit")}
+                    className={`w-full rounded-md border p-4 text-left ${
+                      refundMethod === "Website Credit"
+                        ? "border-accent bg-accent/10"
+                        : "bg-background"
+                    }`}
+                  >
+                    Issue refund as website credit
+                  </button>
+                </div>
+
+                <div className="mt-6 flex justify-between">
+                  <Button variant="outline" onClick={() => setReturnStep(2)}>
+                    Back
+                  </Button>
+
+                  <Button
+                    disabled={!refundMethod}
+                    onClick={() => setReturnStep(4)}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {returnStep === 4 && (
+              <>
+                <h2 className="text-lg font-semibold mb-4">
+                  Return overview
+                </h2>
+
+                <div className="space-y-4 text-sm">
+                  <div>
+                    <p className="font-medium mb-2">Items being returned:</p>
+
+                    <div className="space-y-2">
+                      {selectedReturnItems.map((item, index) => (
+                        <div key={`${item.id}-${index}`} className="flex gap-3">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="h-12 w-12 rounded-md object-cover"
+                          />
+
+                          <div>
+                            <p>{item.name}</p>
+                            <p className="text-muted-foreground">
+                              Qty: {item.quantity || 1}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <p>
+                    <span className="font-medium">Return method:</span>{" "}
+                    {returnMethod}
+                  </p>
+
+                  <p>
+                    <span className="font-medium">Refund method:</span>{" "}
+                    {refundMethod}
+                  </p>
+
+                  <p>
+                    <span className="font-medium">Drop-off deadline:</span>{" "}
+                    Within 10 days after submitting the return.
+                  </p>
+
+                  <p>
+                    <span className="font-medium">Estimated refund:</span>{" "}
+                    $
+                    {selectedReturnItems
+                      .reduce(
+                        (total, item) => total + item.price * (item.quantity || 1),
+                        0
+                      )
+                      .toFixed(2)}
+                  </p>
+                </div>
+
+                <div className="mt-6 flex justify-between">
+                  <Button variant="outline" onClick={() => setReturnStep(3)}>
+                    Back
+                  </Button>
+
+                  <Button onClick={submitReturn}>
+                    Submit Return
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+
+      {/*Return submitted successfully popup */}
+      {showReturnSuccess && !showReturnPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-sm rounded-md border bg-card p-6 text-center shadow-lg">
+            <h2 className="text-xl font-semibold">
+              Return submitted successfully
+            </h2>
+
+            <Button
+              onClick={() => {
+                setShowReturnSuccess(false)
+                router.push("/profile?tab=returns")
+              }}
+              className="mt-6 w-full"
+            >
+              Go to Returns
+            </Button>
+          </div>
+        </div>
+      )}
+
+</div>
+
   )
 }

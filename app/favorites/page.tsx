@@ -137,11 +137,7 @@ export default function FavoritesPage() {
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-5">
           {favorites.map((product) => (
             <div key={product.id} className="group relative">
-              <Link
-                href={`/product/${encodeURIComponent(
-                  product.name.toLowerCase().replace(/\s+/g, "-")
-                )}`}
-              >
+             <Link href={`/shop/${product.category}/${product.id}`}>
                 <div className="aspect-square overflow-hidden rounded-lg bg-gray-100">
                   <Image
                     src={product.image}
@@ -167,11 +163,11 @@ export default function FavoritesPage() {
                 </div>
               </Link>
 
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 flex gap-1">
                 <Button
                   type="button"
                   size="sm"
-                  className="flex-1"
+                  className="flex-1 h-8 text-xs"
                   onClick={() => openSizePopup(product)}
                 >
                   Move to Bag
@@ -182,9 +178,9 @@ export default function FavoritesPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => removeFavorite(product.id)}
-                  className="flex-1 gap-2"
+                  className="flex-1 h-8 text-xs gap-1"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3 w-3" />
                   Remove
                 </Button>
               </div>
@@ -283,20 +279,16 @@ export default function FavoritesPage() {
 
       {/* Recommendations Card*/}
       {recommendedProducts.length > 0 && (
-        <div className="mt-15">
+        <div className="mt-18">
           <h2 className="text-2xl font-semibold">
             Recommended For You
           </h2>
 
-          <p className="mt-2 text-sm text-muted-foreground">
-            Based on items you saved.
-          </p>
-
-          <div className="mt-5 flex gap-5 overflow-x-auto overflow-y-hidden pb-4">
+          <div className="mt-5 flex gap-6 overflow-x-auto overflow-y-hidden pb-4">
             {recommendedProducts.map((product) => (
               <div
                 key={product.id}
-                className="w-[150px] min-w-[150px] max-w-[150px] sm:w-[170px] sm:min-w-[170px] sm:max-w-[170px] lg:w-[180px] lg:min-w-[180px] lg:max-w-[180px] flex-shrink-0"
+                className="w-[100px] min-w-[100px] max-w-[150px] sm:w-[170px] sm:min-w-[170px] sm:max-w-[170px] lg:w-[180px] lg:min-w-[180px] lg:max-w-[180px] flex-shrink-0"
               >
                 <ProductCard product={product} />
               </div>

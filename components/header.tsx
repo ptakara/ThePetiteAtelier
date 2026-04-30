@@ -83,7 +83,19 @@ export function Header() {
 
 
   useEffect(() => {
-    setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true")
+    const updateLoginStatus = () => {
+      setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true")
+    }
+
+    updateLoginStatus()
+
+    window.addEventListener("storage", updateLoginStatus)
+    window.addEventListener("authChanged", updateLoginStatus)
+
+    return () => {
+      window.removeEventListener("storage", updateLoginStatus)
+      window.removeEventListener("authChanged", updateLoginStatus)
+    }
   }, [])
 
 
@@ -314,7 +326,7 @@ export function Header() {
 
           {/* User Account */}
           <Button asChild variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-            <Link href={isLoggedIn ? "/profile" : "/login?redirect=/profile"}>
+            <Link href="/profile">
               <User className="h-5 w-5" />
                 <span className="sr-only">Account</span>
             </Link>

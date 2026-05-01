@@ -74,6 +74,15 @@ function LoginPageContent() {
             Sign up
           </Link>
         </div>
+
+        <div className ="mt-4 text-md text-muted-foreground">
+          For Demo purposes use credentials below
+          <p>Email: user1@gmail.com</p>
+          <p>Password: user123</p>
+        </div>
+
+
+
       </div>
     </div>
   )

@@ -1,14 +1,14 @@
-//app/login/page.tsx
+// app/login/page.tsx
 
 "use client"
 
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -18,16 +18,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
 
   const handleLogin = (e: React.FormEvent) => {
-  e.preventDefault()
-  if (email === "user1@gmail.com" && password === "user123") {
-    localStorage.setItem("isLoggedIn", "true")
-    localStorage.setItem("userEmail", email)
-    window.dispatchEvent(new Event("authChanged"))
+    e.preventDefault()
 
-    router.push(redirect)
-  }else {
-    alert("Invalid email or password")
-  }
+    if (email === "user1@gmail.com" && password === "user123") {
+      localStorage.setItem("isLoggedIn", "true")
+      localStorage.setItem("userEmail", email)
+      window.dispatchEvent(new Event("authChanged"))
+
+      router.push(redirect)
+    } else {
+      alert("Invalid email or password")
+    }
   }
 
   return (
@@ -75,5 +76,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="pt-24 text-center">Loading...</div>}>
+      <LoginPageContent />
+    </Suspense>
   )
 }

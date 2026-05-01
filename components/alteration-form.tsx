@@ -89,6 +89,19 @@ export function AlterationForm() {
   }
 
 
+  const formatPhoneNumber = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 10) // only numbers, max 10
+
+    if (digits.length < 4) return digits
+    if (digits.length < 7) {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
+    }
+
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+  }
+
+
+
   return (
     <section id="contact" className="py-10 lg:py-15">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -221,12 +234,17 @@ export function AlterationForm() {
               <FieldGroup>
                 <Field>
                   <FieldLabel className="text-sm font-medium text-foreground">Phone</FieldLabel>
-                  <Input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="mt-2"
-                  />
+                <Input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      phone: formatPhoneNumber(e.target.value),
+                    })
+                  }
+                  className="mt-2"
+                />
                 </Field>
               </FieldGroup>
 

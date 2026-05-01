@@ -149,10 +149,10 @@ export default function BagIt() {
                   <div className="flex justify-between gap-4">
                     <div>
                       <Link href={`/shop/${item.category}/${item.id}`}>
-                        <h2 className="font-medium hover:underline cursor-pointer">
-                          {item.name}
-                        </h2>
-                      </Link>
+                      <h2 className="font-medium hover:underline cursor-pointer">
+                        {item.name}
+                      </h2>
+                    </Link>
                       {/* size info */}
                       <p className="text-sm text-muted-foreground">
                         Size: {item.selectedSize}

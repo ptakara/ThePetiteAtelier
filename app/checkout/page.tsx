@@ -228,7 +228,7 @@ export default function CheckoutPage() {
               href="/profile/addresses"
               className="mb-5 inline-block text-sm underline underline-offset-4"
             >
-              Add new shipping address
+              Add  & Manage Shipping Addresses
             </Link>
 
               <div className="grid sm:grid-cols-2 gap-4">

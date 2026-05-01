@@ -9,6 +9,7 @@ import { ChevronDown, ChevronUp, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { useSearchParams } from "next/navigation"
+import { Suspense } from "react"
 
 type OrderItem = {
   id: number
@@ -44,7 +45,7 @@ type Order = {
 }
 
 
-export default function MyOrdersPage() {
+function MyOrdersPageContent() {
   const [orders, setOrders] = useState<Order[]>([])
   const [openOrder, setOpenOrder] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
@@ -77,7 +78,7 @@ export default function MyOrdersPage() {
 
 
 
-  {/*Return Window, if eligible*/}
+  //*Return Window, if eligible
   const isReturnEligible = (orderDate: string) => {
     const orderTime = new Date(orderDate).getTime()
     const now = new Date().getTime()
@@ -106,7 +107,7 @@ export default function MyOrdersPage() {
 
 
 
-  {/*Return helper function */}
+  //Return helper function
   const toggleReturnItem = (item: OrderItem) => {
     const alreadySelected = selectedReturnItems.some(
       (selectedItem) => selectedItem.id === item.id
@@ -121,7 +122,7 @@ export default function MyOrdersPage() {
     }
   }
 
-  {/*Submit Return function */}
+  // Submit Return function
   const submitReturn = () => {
     if (!selectedReturnOrder) return
 
@@ -688,8 +689,15 @@ export default function MyOrdersPage() {
           </div>
         </div>
       )}
-
 </div>
 
+  )
+}
+
+export default function MyOrdersPage() {
+  return (
+    <Suspense fallback={<div className="pt-24 text-center">Loading...</div>}>
+      <MyOrdersPageContent />
+    </Suspense>
   )
 }
